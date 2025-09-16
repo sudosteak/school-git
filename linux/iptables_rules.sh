@@ -1,8 +1,14 @@
 #!/bin/bash
 
-read -p "what is your server ip " server_ip
-read -p "what is your client ip " client_ip
-read -p "what port do you want to use " port
+# check if script is run as root
+if [[ $EUID -ne 0 ]]; then
+   echo "this script must be run as root" 
+   exit 1
+fi
+
+read -p "what is your server ip: " server_ip
+read -p "what is your client ip: " client_ip
+read -p "what port do you want to use: " port
 
 # flush existing rules
 echo "Flushing existing iptables rules..."
@@ -25,7 +31,7 @@ iptables -I INPUT 3 -s $client_ip -p tcp --dport $port -j REJECT
 
 # display final rules
 echo "Final iptables rules:"
-iptables -L -v -n
+iptables -L -n --line-numbers
 
 # exit script
 echo "Script completed."
