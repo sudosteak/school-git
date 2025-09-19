@@ -6,10 +6,10 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-server_ip= 172.16.30.48
-client_ip= 172.16.31.48
-subnet=172.16.31.0/24
-port=49999
+server_ip = 172.16.30.48
+client_ip = 172.16.31.48
+subnet = 172.16.31.0/24
+port = 49999
 
 # flush existing rules
 echo "Flushing existing iptables rules..."
