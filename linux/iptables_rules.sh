@@ -6,9 +6,10 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-read -p "what is your server ip: " server_ip
-read -p "what is your client ip: " client_ip
-read -p "what port do you want to use: " port
+server_ip= 172.16.30.48
+client_ip= 172.16.31.48
+subnet=172.16.31.0/24
+port=49999
 
 # flush existing rules
 echo "Flushing existing iptables rules..."
@@ -25,10 +26,10 @@ iptables -A OUTPUT -o lo -j ACCEPT
 iptables -A INPUT -p tcp -s $client_ip --dport $port -j REJECT
 
 # allow traffic from other hosts in the client subnet
-iptables -A INPUT -p tcp -s 
+iptables -A INPUT -p tcp -s $subnet --dport $port -j ACCEPT
 
 # block traffic from all other hosts
-
+iptables -A INPUT -p tcp --dport $port -j REJECT
 
 # display final rules
 echo "Final iptables rules:"
