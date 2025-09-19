@@ -19,15 +19,16 @@ echo "Adding iptables rules..."
 
 # allow loopback interface traffic
 iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
 
-# allow traffic from the server's ip address
-iptables -A INPUT -s $server_ip -j ACCEPT
+# block traffic from a specific client
+iptables -A INPUT -p tcp -s $client_ip --dport $port -j REJECT
 
-# block incoming traffic on tcp port $port
-iptables -A INPUT -p tcp --dport $port -j REJECT
+# allow traffic from other hosts in the client subnet
+iptables -A INPUT -p tcp -s 
 
-# block incoming traffic from the specific client on $port
-iptables -I INPUT 3 -s $client_ip -p tcp --dport $port -j REJECT
+# block traffic from all other hosts
+
 
 # display final rules
 echo "Final iptables rules:"
