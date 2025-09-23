@@ -1,4 +1,4 @@
-# OSPF Configuration Script for pull0037 Network
+! OSPF Configuration Script for pull0037 Network
 
 hostname pull0037-EDGE
 enable secret class
