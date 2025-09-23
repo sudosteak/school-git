@@ -1,6 +1,8 @@
+# OSPF Configuration Script for pull0037 Network
+
 hostname pull0037-EDGE
 enable secret class
-username cisco privilege 15 secret class
+username admin privilege 15 secret cisco
 line vty 0 15
 login local
 transport input ssh
@@ -12,6 +14,7 @@ exit
 ip domain-name cnap.cst
 crypto key gen rsa general-keys modulus 2048
 no ip domain-lookup
+ntp master 4
 
 int lo100
 ip addr 10.162.100.1 255.255.255.255
@@ -29,13 +32,11 @@ int g0/0/2
 ip addr 10.162.13.1 255.255.255.248
 exit
 
-
-
--------------------------------------------------------------------------------------------------
+---
 
 hostname pull0037-DIST
 enable secret class
-username cisco privilege 15 secret class
+username admin privilege 15 secret cisco
 line vty 0 15
 login local
 transport input ssh
@@ -47,6 +48,7 @@ exit
 ip domain-name cnap.cst
 crypto key gen rsa general-keys modulus 2048
 no ip domain-lookup
+ntp server 10.162.100.1
 
 int lo100
 ip addr 10.162.100.3 255.255.255.255
@@ -60,7 +62,7 @@ int g0/0/2
 ip addr 10.162.23.3 255.255.255.248
 exit
 
--------------------------------------------------------------------------------------------------
+---
 
 hostname pull0037-CORE
 enable secret class
@@ -76,29 +78,30 @@ exit
 ip domain-name cnap.cst
 crypto key gen rsa general-keys modulus 2048
 no ip domain-lookup
-no switchport
 ip routing
 
 vlan 20
-name pull0037-20
+name pull0037-VLAN20
 exit
 
 vlan 666
-name pull0037-666
+name pull0037-VLAN666
 
 int lo100
+no switchport
 ip addr 10.162.100.1 255.255.255.255
 exit
 
-int g0/0/1
+int g3/0/1
+no switchport
 ip addr 10.162.12.2 255.255.255.248
 exit
 
-int g0/0/2
-ip addr 10.162.23.2 255.255.255.348
+int g3/0/2
+no switchport
+ip addr 10.162.23.2 255.255.255.248
 exit
 
 int vlan20
 ip addr 10.162.20.2 255.255.255.0
 exit
-

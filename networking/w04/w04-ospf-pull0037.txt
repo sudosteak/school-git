@@ -1,0 +1,145 @@
+=== co1 - router ids ===
+
+#	pull0037-EDGE
+pull0037-EDGE(config)#do show ip ospf | inc Routing Process|Router ID
+ Routing Process "ospf 162" with ID 10.162.100.1
+
+pull0037-EDGE(config)#do show ip ospf int lo100 | inc Process ID|Area
+  Internet Address 10.162.100.1/32, Interface ID 12, Area 0
+  Process ID 162, Router ID 10.162.100.1, Network Type LOOPBACK, Cost: 1
+
+#	pull0037-CORE
+pull0037-CORE(config)#do show ip ospf | inc Routing Process|Router ID
+ Routing Process "ospf 162" with ID 10.162.100.2
+
+pull0037-CORE(config)#do show ip ospf int lo100 | inc Process ID|Area
+  Internet Address 10.162.100.1/32, Interface ID 41, Area 0
+  Process ID 162, Router ID 10.162.100.2, Network Type LOOPBACK, Cost: 1
+
+#	pull0037-DIST
+pull0037-DIST(config)#do show ip ospf | inc Routing Process|Router ID
+ Routing Process "ospf 162" with ID 10.162.100.3
+
+pull0037-DIST(config)#do show ip ospf int lo100 | inc Process ID|Area
+  Internet Address 10.162.100.3/32, Interface ID 12, Area 0
+  Process ID 162, Router ID 10.162.100.3, Network Type LOOPBACK, Cost: 1
+
+!-- proves each router is running ospf process 162, has the intended router-id, and lo100 is ospf-enabled in area 0
+
+=== co2 - transit adjacencies & passive edges ===
+
+#	pull0037-EDGE
+pull0037-EDGE(config)#do show ip ospf neighbor
+
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+10.162.100.3      0   FULL/  -        00:00:39    10.162.13.3     GigabitEthernet0/0/2
+10.162.100.2      0   FULL/  -        00:00:36    10.162.12.2     GigabitEthernet0/0/1
+
+#	pull0037-CORE
+pull0037-CORE(config)#do show ip ospf neighbor
+
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+10.162.100.3      0   FULL/  -        00:00:31    10.162.23.3     GigabitEthernet3/0/2
+10.162.100.1      0   FULL/  -        00:00:39    10.162.12.1     GigabitEthernet3/0/1
+
+#	pull0037-DIST
+pull0037-DIST(config)#do show ip ospf neighbor
+
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+10.162.100.2      0   FULL/  -        00:00:33    10.162.23.2     GigabitEthernet0/0/2
+10.162.100.1      0   FULL/  -        00:00:35    10.162.13.1     GigabitEthernet0/0/1
+
+#	pull0037-EDGE
+pull0037-EDGE(config)#do show ip ospf int bri
+Interface    PID   Area            IP Address/Mask    Cost  State Nbrs F/C
+Lo100        162   0               10.162.100.1/32    1     LOOP  0/0
+Gi0/0/2      162   0               10.162.13.1/29     1     P2P   1/1
+Gi0/0/1      162   0               10.162.12.1/29     1     P2P   1/1
+
+#	pull0037-CORE
+pull0037-CORE(config)#do show ip ospf int bri
+Interface    PID   Area            IP Address/Mask    Cost  State Nbrs F/C
+Lo100        162   0               10.162.100.1/32    1     LOOP  0/0
+Vl20         162   0               10.162.20.2/24     1     DR    0/0
+Gi3/0/2      162   0               10.162.23.2/29     1     P2P   1/1
+Gi3/0/1      162   0               10.162.12.2/29     1     P2P   1/1
+
+#	pull0037-DIST
+pull0037-DIST(config)#do show ip ospf int bri
+Interface    PID   Area            IP Address/Mask    Cost  State Nbrs F/C
+Lo100        162   0               10.162.100.3/32    1     LOOP  0/0
+Gi0/0/2      162   0               10.162.23.3/29     1     P2P   1/1
+Gi0/0/1      162   0               10.162.13.3/29     1     P2P   1/1
+
+#	pull0037-CORE
+pull0037-CORE(config)#do show ip ospf int vlan 20 | inc Passive|Process ID|Area
+  Internet Address 10.162.20.2/24, Interface ID 44, Area 0
+  Process ID 162, Router ID 10.162.100.2, Network Type BROADCAST, Cost: 1
+    No Hellos (Passive interface)
+
+!-- prove adjacencies on transit links, core's svi20 is in ospf (passive, area 0), and the edge uplink to remote does not participate in ospf.
+
+=== co3 - default route propagation ===
+
+#	pull0037-EDGE
+pull0037-EDGE(config)#do show ip route 0.0.0.0
+Routing entry for 0.0.0.0/0, supernet
+  Known via "static", distance 1, metric 0, candidate default path
+  Routing Descriptor Blocks:
+  * 203.0.113.254, via GigabitEthernet0/0/0
+      Route metric is 0, traffic share count is 1
+
+#	pull0037-CORE
+pull0037-CORE(config)#do show ip route | inc E2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+O*E2  0.0.0.0/0 [110/1] via 10.162.12.1, 00:02:20, GigabitEthernet3/0/1
+
+#	pull0037-DIST
+pull0037-DIST(config)#do show ip route | inc E2
+       E1 - OSPF external type 1, E2 - OSPF external type 2, m - OMP
+O*E2  0.0.0.0/0 [110/1] via 10.162.13.1, 00:02:59, GigabitEthernet0/0/1
+
+!-- default route has been propagated from edge to core/dist via ospf.
+
+=== co4 - convergence & path change ===
+
+#	PC BEFORE
+PS C:\Users\Student> tracert -d 203.0.113.254
+
+Tracing route to 203.0.113.254 over a maximum of 30 hops
+
+  1     1 ms     1 ms     1 ms  10.162.20.2
+  2    <1 ms    <1 ms    <1 ms  10.162.12.1
+  3     1 ms     1 ms     2 ms  203.0.113.254
+
+Trace complete.
+
+#	PC AFTER
+PS C:\Users\Student> tracert -d 203.0.113.254
+
+Tracing route to 203.0.113.254 over a maximum of 30 hops
+
+  1     1 ms     1 ms     1 ms  10.162.20.2
+  2    32 ms    <1 ms     4 ms  10.162.23.3
+  3     1 ms    <1 ms    <1 ms  10.162.13.1
+  4     1 ms     2 ms     2 ms  203.0.113.254
+
+Trace complete.
+
+#	pull0037-CORE AFTER
+pull0037-CORE(config)#do show ip route 0.0.0.0
+Routing entry for 0.0.0.0/0, supernet
+  Known via "ospf 162", distance 110, metric 1, candidate default path
+  Tag 162, type extern 2, forward metric 2
+  Last update from 10.162.23.3 on GigabitEthernet3/0/2, 00:00:22 ago
+  Routing Descriptor Blocks:
+  * 10.162.23.3, from 10.162.100.1, 00:00:22 ago, via GigabitEthernet3/0/2
+      Route metric is 1, traffic share count is 1
+      Route tag 162
+
+#	pull0037-CORE AFTER
+pull0037-CORE(config)#do show tcp bri
+TCB       Local Address               Foreign Address             (state)
+FFA09E5128  10.162.20.2.22             10.162.20.20.54293          ESTAB
+
+!-- proves baseline path via core->edge, post-failure path via core->dist->edge, and that the default route persists during reconvergence (ospf reroutes without manual changes).
