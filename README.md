@@ -1,3 +1,3 @@
-files i use for school
+# files i use for school
 
-most of them are scripts for assignments
+most of them are scripts for assignments or labs
