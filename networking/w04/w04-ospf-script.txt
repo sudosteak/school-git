@@ -29,9 +29,9 @@ no ip domain-lookup
 ntp master 4
 logging host 10.162.20.20
 logging trap informational
-logging source-interface loopback100
+logging source-interface lo100
 
-interface loopback100
+interface lo100
     ip address 10.162.100.1 255.255.255.255
 exit
 
@@ -73,9 +73,9 @@ no ip domain-lookup
 ntp server 10.162.100.1
 logging host 10.162.20.20
 logging trap informational
-logging source-interface loopback100
+logging source-interface lo100
 
-interface loopback100
+interface lo100
     ip address 10.162.100.3 255.255.255.255
 exit
 
@@ -118,7 +118,7 @@ no ip domain-lookup
 ntp server 10.162.100.1
 logging host 10.162.20.20
 logging trap informational
-logging source-interface loopback100
+logging source-interface lo100
 
 vlan 20
     name pull0037-VLAN20
@@ -128,7 +128,7 @@ vlan 666
     name pull0037-VLAN666
 exit
 
-interface loopback100
+interface lo100
     no switchport
     ip address 10.162.100.1 255.255.255.255
 exit
@@ -150,7 +150,7 @@ exit
 ! configure OSPF core
 
 ! shutdown unused interfaces and put them in vlan666
-interface range g3/0/3-24
+interface range gx/0/3-24
     shutdown
     switchport mode access
     switchport access vlan 666
@@ -158,3 +158,87 @@ exit
 
 ! configure port for PC
 
+interface gx/0/20
+    switchport mode access
+    switchport access vlan 20
+exit
+
+! configure ospf identity
+! on edge router
+router ospf 162
+    router-id 10.162.100.1
+exit
+
+interface lo100 
+    ip ospf 162 area 0
+exit
+
+! on core switch
+router ospf 162
+    router-id 10.162.100.2
+exit
+
+interface lo100 
+    ip ospf 162 area 0
+exit
+
+! on distribution router
+router ospf 162
+    router-id 10.162.100.3
+exit
+
+interface lo100
+    ip ospf 162 area 0
+exit
+
+! enable ospf on transit links
+! on edge router
+interface g0/0/1
+    ip ospf 162 area 0
+    ip ospf network point-to-point
+exit
+
+interface g0/0/2
+    ip ospf 162 area 0
+    ip ospf network point-to-point
+! do not put g0/0/0 in ospf - it goes to the internet
+exit
+
+! on core switch
+interface gx/0/1
+    ip ospf 162 area 0
+    ip ospf network point-to-point
+exit
+
+interface gx/0/2
+    ip ospf 162 area 0
+    ip ospf network point-to-point
+exit
+
+interface vlan20
+    ip ospf 162 area 0
+exit
+
+router ospf 162
+    passive-interface vlan20
+exit
+
+! on distribution router
+interface g0/0/1
+    ip ospf 162 area 0
+    ip ospf network point-to-point
+exit
+
+interface g0/0/2
+    ip ospf 162 area 0
+    ip ospf network point-to-point
+exit
+
+! default route on edge router
+ip route 0.0.0.0 0.0.0.0 g0/0/0 203.0.113.254
+
+router ospf 162
+    default-information originate
+exit
+
+! end of script
