@@ -1,0 +1,244 @@
+! OSPF Configuration Script for pull0037 Network
+! U = 162
+! x = 
+
+! basic config
+! edge router - pull0037-EDGE
+
+hostname pull0037-EDGE
+enable secret class
+username admin privilege 15 secret cisco
+service password-encryption
+
+line vty 0 15
+    login local
+    transport input ssh
+    logging synchronous
+exit
+
+line console 0
+    logging synchronous
+exit
+
+! ssh config
+ip domain-name cnap.cst
+crypto key gen rsa general-keys modulus 2048
+no ip domain-lookup
+
+! setup logging & ntp
+ntp master 4
+logging host 10.162.20.20
+logging trap informational
+logging source-interface lo100
+
+interface lo100
+    ip address 10.162.100.1 255.255.255.255
+exit
+
+interface g0/0/0
+    ip address 203.0.113.162 255.255.255.0
+exit
+
+interface g0/0/1
+    ip address 10.162.12.1 255.255.255.248
+exit
+
+interface g0/0/2
+    ip address 10.162.13.1 255.255.255.248
+exit
+
+! distribution router - pull0037-DIST
+
+hostname pull0037-DIST
+enable secret class
+username admin privilege 15 secret cisco
+service password-encryption
+
+line vty 0 15
+    login local
+    transport input ssh
+    logging synchronous
+exit
+
+line console 0
+    logging synchronous
+exit
+
+! ssh config
+ip domain-name cnap.cst
+crypto key generate rsa general-keys modulus 2048
+no ip domain-lookup
+
+! setup logging & ntp
+ntp server 10.162.100.1
+logging host 10.162.20.20
+logging trap informational
+logging source-interface lo100
+
+interface lo100
+    ip address 10.162.100.3 255.255.255.255
+exit
+
+interface g0/0/1
+    ip address 10.162.13.3 255.255.255.248
+exit
+
+interface g0/0/2
+    ip address 10.162.23.3 255.255.255.248
+exit
+
+! core router - pull0037-CORE
+
+hostname pull0037-CORE
+enable secret class
+username cisco privilege 15 secret class
+service password-encryption
+
+line vty 0 15
+    login local
+    transport input ssh
+    logging synchronous
+exit
+
+line console 0
+    logging synchronous
+exit
+
+ip domain-name cnap.cst
+crypto key generate rsa general-keys modulus 2048
+no ip domain-lookup
+ip routing
+
+! ssh config
+ip domain-name cnap.cst
+crypto key generate rsa general-keys modulus 2048
+no ip domain-lookup
+
+! setup logging & ntp
+ntp server 10.162.100.1
+logging host 10.162.20.20
+logging trap informational
+logging source-interface lo100
+
+vlan 20
+    name pull0037-VLAN20
+exit
+
+vlan 666
+    name pull0037-VLAN666
+exit
+
+interface lo100
+    no switchport
+    ip address 10.162.100.1 255.255.255.255
+exit
+
+interface gx/0/1
+    no switchport
+    ip address 10.162.12.2 255.255.255.248
+exit
+
+interface gx/0/2
+    no switchport
+    ip address 10.162.23.2 255.255.255.248
+exit
+
+interface vlan20
+    ip address 10.162.20.2 255.255.255.0
+exit
+
+! configure OSPF core
+
+! shutdown unused interfaces and put them in vlan666
+interface range gx/0/3-24
+    shutdown
+    switchport mode access
+    switchport access vlan 666
+exit
+
+! configure port for PC
+
+interface gx/0/20
+    switchport mode access
+    switchport access vlan 20
+exit
+
+! configure ospf identity
+! on edge router
+router ospf 162
+    router-id 10.162.100.1
+exit
+
+interface lo100 
+    ip ospf 162 area 0
+exit
+
+! on core switch
+router ospf 162
+    router-id 10.162.100.2
+exit
+
+interface lo100 
+    ip ospf 162 area 0
+exit
+
+! on distribution router
+router ospf 162
+    router-id 10.162.100.3
+exit
+
+interface lo100
+    ip ospf 162 area 0
+exit
+
+! enable ospf on transit links
+! on edge router
+interface g0/0/1
+    ip ospf 162 area 0
+    ip ospf network point-to-point
+exit
+
+interface g0/0/2
+    ip ospf 162 area 0
+    ip ospf network point-to-point
+! do not put g0/0/0 in ospf - it goes to the internet
+exit
+
+! on core switch
+interface gx/0/1
+    ip ospf 162 area 0
+    ip ospf network point-to-point
+exit
+
+interface gx/0/2
+    ip ospf 162 area 0
+    ip ospf network point-to-point
+exit
+
+interface vlan20
+    ip ospf 162 area 0
+exit
+
+router ospf 162
+    passive-interface vlan20
+exit
+
+! on distribution router
+interface g0/0/1
+    ip ospf 162 area 0
+    ip ospf network point-to-point
+exit
+
+interface g0/0/2
+    ip ospf 162 area 0
+    ip ospf network point-to-point
+exit
+
+! default route on edge router
+ip route 0.0.0.0 0.0.0.0 g0/0/0 203.0.113.254
+
+router ospf 162
+    default-information originate
+exit
+
+! end of script
