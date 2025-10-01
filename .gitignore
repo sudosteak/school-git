@@ -1,0 +1,5 @@
+# Ignore GitHub configuration directory
+.github/
+
+# Ignore resources directory
+.resources/
