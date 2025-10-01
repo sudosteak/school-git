@@ -3,3 +3,8 @@
 
 # Ignore resources directory
 .resources/
+
+# Ignore obsidian vault shit
+.obsidian/
+github-obsidian
+github-obsidian.pub
