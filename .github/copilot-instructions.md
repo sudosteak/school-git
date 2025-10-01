@@ -27,6 +27,10 @@ Files are organized by subject area with lab/week-based subdirectories.
 - Cisco IOS configuration files (`.txt` format) for OSPF routing
 - Network identifier: `pull0037` with U=162
 
+### `.resources/`
+- Lab documents, assignment specifications, and other reference materials
+- Store PDFs, documentation, and useful information for reference
+
 ## Code Conventions
 
 ### Python Scripts
@@ -49,6 +53,7 @@ Files are organized by subject area with lab/week-based subdirectories.
 - Lowercase user-facing messages (prompts/output)
 - Lowercase comments: `# get the first guess from the user`
 - F-strings for formatting: `f"{variable} is incorrect"`
+- Keep scripts clean - avoid bloated separators like `echo "="*25` or excessive visual formatting
 
 ### Bash Scripts
 **Common Patterns:**
@@ -57,6 +62,7 @@ Files are organized by subject area with lab/week-based subdirectories.
 - Default values: `${variable:-default_value}`
 - User prompts with defaults: `read -p "Enter... (default: value): " VAR`
 - Variables: UPPERCASE for configuration, lowercase for user input
+- Keep scripts clean - avoid bloated separators like `echo "="*25` or excessive visual formatting
 
 **Network Script Conventions:**
 - Interface names: `enp2s0` (red), `enp1s0` (blue) as defaults
