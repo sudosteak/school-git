@@ -1,12 +1,6 @@
 #!/bin/bash
 
-#
-# program name: openssh.sh
-# program purpose: automate openssh installation and configuration on rhel 8.10
-# author: Jacob P, 041156249, 010
-# date & version: 03-10-2025, version: 1.0
-#
-
+# check for root
 if [[ $EUID -ne 0 ]]; then
     echo "this script must be run as root"
     exit 1
@@ -18,9 +12,21 @@ alias_ip="${ALIAS_IP:-}"
 interface="${INTERFACE:-}"
 ssh_user="${SSH_USER:-}"
 
-# install openssh packages
-echo "installing openssh packages..."
-dnf install -y openssh-server openssh-clients &>/dev/null || { echo "installation failed"; exit 1; }
+# check if openssh is already installed
+if rpm -q openssh-server &>/dev/null; then
+    echo "openssh-server is already installed"
+else
+    echo "openssh-server is not installed, proceeding with installation..."
+    dnf install -y openssh-server openssh-clients &>/dev/null || { echo "installation failed"; exit 1; }
+fi
+
+# checks for ssh keys
+if [[ ! -f $HOME/.ssh/id_rsa.pub ]]; then
+    echo "generating ssh keys for $USER"
+    ssh-keygen -t rsa -b 4096
+else
+    echo "skipping ssh key gen, keys already exist for $USER"
+fi
 
 # backup existing config
 cp "$ssh_config" "${ssh_config}.backup"
