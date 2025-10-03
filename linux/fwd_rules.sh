@@ -15,14 +15,12 @@ host_ip="172.16.0.1/16"
 firewall-cmd --permanent --zone=public --remove-rich-rule="rule family=\"ipv4\" source address=\"$accept_ip\" service name=\"$service\" accept" 2>/dev/null
 firewall-cmd --permanent --zone=public --remove-rich-rule="rule family=\"ipv4\" source address=\"$deny_ip\" service name=\"$service\" reject" 2>/dev/null
 
-# allow ssh from accept_ip
+# allow ssh from accept_ip and host_ip
 firewall-cmd --permanent --zone=public --add-rich-rule="rule family=\"ipv4\" source address=\"$accept_ip\" service name=\"$service\" accept"
+firewall-cmd --permanent --zone=public --add-rich-rule="rule family=\"ipv4\" source address=\"$host_ip\" service name=\"$service\" accept"
 
-# block ssh from deny_ip
-firewall-cmd --permanent --zone=public --add-rich-rule="rule family=\"ipv4\" source address=\"$deny_ip\" service name=\"$service\" reject"
-
-# accept ssh from host pc
-firewall-cmd --permanent --zone=public --add-rich-rule="rule family=\"ipv4\" source address=\"$host_ip\" service name=\"$service\" accept"  
+# block ssh from everyone else
+firewall-cmd --permanent --zone=public --add-rich-rule="rule family=\"ipv4\" source address=\"0.0.0.0/0\" service name=\"$service\" reject"
 
 firewall-cmd --reload
 
