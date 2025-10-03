@@ -2,7 +2,7 @@
 
 # check for root
 if [[ $EUID -ne 0 ]]; then
-    echo "this script must be run as root"
+    echo "this script must be run as root or with sudo"
     exit 1
 fi
 
@@ -13,17 +13,17 @@ interface="${INTERFACE:-}"
 ssh_user="${SSH_USER:-}"
 
 # check if openssh is already installed
-if rpm -q openssh-server &>/dev/null; then
-    echo "openssh-server is already installed"
+if rpm -q openssh &>/dev/null; then
+    echo "openssh is already installed"
 else
-    echo "openssh-server is not installed, proceeding with installation..."
-    dnf install -y openssh-server openssh-clients &>/dev/null || { echo "installation failed"; exit 1; }
+    echo "openssh is not installed, proceeding with installation..."
+    dnf install -y openssh &>/dev/null || { echo "installation failed"; exit 1; }
 fi
 
 # checks for ssh keys
 if [[ ! -f $HOME/.ssh/id_rsa.pub ]]; then
     echo "generating ssh keys for $USER"
-    ssh-keygen -t rsa -b 4096
+    ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N ""
 else
     echo "skipping ssh key gen, keys already exist for $USER"
 fi
