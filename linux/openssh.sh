@@ -6,49 +6,15 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-# variables
 ssh_config="/etc/ssh/sshd_config"
-alias_ip="${ALIAS_IP:-}"
-interface="${INTERFACE:-}"
-ssh_user="${SSH_USER:-}"
+alias_ip="172.16.32.48"
 
-# check if openssh is already installed
-if rpm -q openssh &>/dev/null; then
-    echo "openssh is already installed"
-else
-    echo "openssh is not installed, proceeding with installation..."
-    dnf install -y openssh &>/dev/null || { echo "installation failed"; exit 1; }
-fi
+ssh-keygen -t rsa -b 4096 -f "/home/cst8246/.ssh/id_rsa" -N ""
 
-# checks for ssh keys
-if [[ ! -f $HOME/.ssh/id_rsa.pub ]]; then
-    echo "generating ssh keys for $USER"
-    ssh-keygen -t rsa -b 4096 -f "$HOME/.ssh/id_rsa" -N ""
-else
-    echo "skipping ssh key gen, keys already exist for $USER"
-fi
-
-# backup existing config
-cp "$ssh_config" "${ssh_config}.backup"
-
-# configure ssh security with sed
 sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin no/' "$ssh_config"
 sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' "$ssh_config"
 sed -i 's/^#\?PubkeyAuthentication.*/PubkeyAuthentication yes/' "$ssh_config"
-sed -i 's/^#\?ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' "$ssh_config"
 
-echo "ssh security configured"
-
-# enable and restart sshd
-systemctl enable sshd &>/dev/null
+systemctl enable sshd
 systemctl restart sshd
-
-if systemctl is-active --quiet sshd; then
-    echo "ssh service active"
-    echo "configure firewall and test connection before closing session"
-else
-    echo "failed to start ssh service"
-    systemctl status sshd
-    exit 1
-fi
 
