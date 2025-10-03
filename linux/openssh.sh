@@ -1,21 +1,34 @@
 #!/bin/bash
 
-# check for root
-if [[ $EUID -ne 0 ]]; then
-    echo "this script must be run as root or with sudo"
-    exit 1
+# variables
+ssh_config="/etc/ssh/sshd_config"
+server="pull0037-SRV.example48.lab"
+
+
+# check if openssh is already installed
+if rpm -q openssh &>/dev/null; then
+    echo "openssh is already installed"
+else
+    echo "openssh is not installed, proceeding with installation..."
+    dnf install -y openssh &>/dev/null || { echo "installation failed"; exit 1; }
 fi
 
-ssh_config="/etc/ssh/sshd_config"
+# checks for ssh keys
+if [[ ! -f /home/cst8246/.ssh/id_rsa.pub ]]; then
+    echo "generating ssh keys for cst8246"
+    ssh-keygen -t rsa -b 4096 -f "/home/cst8246/.ssh/id_rsa" -N ""
+else
+    echo "skipping ssh key gen, keys already exist for cst8246"
+fi
 
-ssh-keygen -t rsa -b 4096 -f "/home/cst8246/.ssh/id_rsa" -N ""
+ssh-copy-id -f cst8246@pull0037-SRV.example48.lab
 
-sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin no/' "$ssh_config"
-sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' "$ssh_config"
-sed -i 's/^#\?PubkeyAuthentication.*/PubkeyAuthentication yes/' "$ssh_config"
 
-systemctl enable sshd
-systemctl restart sshd
+# configure ssh security with sed
+#sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin no/' "$ssh_config"
+#sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' "$ssh_config"
+#sed -i 's/^#\?PubkeyAuthentication.*/PubkeyAuthentication yes/' "$ssh_config"
+#sed -i 's/^#\?ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' "$ssh_config"
 
-# ssh-copy-id cst8246@pull0037-CLT.example48.lab
-# ssh-copy-id cst8246@pull0037-SRV.example48.lab
+echo "ssh security configured"
+
