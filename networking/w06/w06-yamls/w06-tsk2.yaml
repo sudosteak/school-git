@@ -1,0 +1,36 @@
+# 24F-NET3008 - ENARSI 15.1.2 - Part 3
+# To be used with x-remote.py
+# https://github.com/ayalac1111/x-remote
+
+
+# Replace {username} with your username and {U} with your U number
+output_file: {username}-w06-tsk2.txt
+
+# Devices to collect information from
+devices:
+  - device_info:
+      device_type: mikrotik_routeros
+      ip: 10.{U}.45.4
+      username: admin
+      password: admin
+    commands:
+      - /interface print  
+      - /ip add print
+      - /routing ospf instance print   
+      - /routing ospf neighbor print
+      - /routing ospf interface-template print
+      - /routing route print where ospf
+  - device_info:
+      device_type: mikrotik_routeros
+      ip: 10.{U}.45.5
+      username: admin
+      password: admin
+    commands:
+      - /interface print  
+      - /ip add print
+      - /routing ospf instance print   
+      - /routing ospf neighbor print
+      - /routing ospf interface-template print
+      - /routing route print where ospf
+      - /ping count=2 10.{U}.45.4
+

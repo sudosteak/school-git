@@ -1,0 +1,35 @@
+# 24F-NET3008 - ENARSI 15.1.2 - Part 3
+# To be used with x-remote.py
+# https://github.com/ayalac1111/x-remote
+
+
+# Replace {username} with your username
+output_file: {username}-w06-tsk4.txt
+
+# Devices to collect information from
+devices:
+  - device_info:
+      device_type: cisco_xe
+      ip: 10.{U}.100.1
+      username: admin
+      password: cisco
+    commands:
+      - show ip ospf neigh
+      - show ip ospf interface gi0/0/0
+  - device_info:
+      device_type: cisco_xe
+      ip: 10.{U}.100.3
+      username: admin
+      password: cisco
+    commands:
+      - show ip route ospf | begin Gateway
+      - show ip ospf databse external
+      - show ip cef 10.{partner}.100.5
+  - device_info:
+      device_type: mikrotik_routeros
+      ip: 10.{U}.45.5
+      username: admin
+      password: admin
+    commands:
+      - /routing ospf route print where dst-address=10.{partner}.100.5
+      - /tool traceroute count=1 10.{partner}.100.5

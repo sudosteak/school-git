@@ -1,0 +1,60 @@
+# 24F-NET3008 - ENARSI 15.1.2 - Part 3
+# To be used with x-remote.py
+# https://github.com/ayalac1111/x-remote
+
+
+# Replace {username} with your username
+output_file: {username}-w06-tsk1.txt
+
+# Devices to collect information from
+devices:
+  - device_info:
+      device_type: cisco_xe
+      ip: 10.{U}.100.1
+      username: admin
+      password: cisco
+    commands:
+      - show cdp neigh
+      - show ip ospf | include ID|Ref
+      - show ip ospf neigh
+      - show ip ospf int brief
+      - show ip ospf int gi0/0/0
+      - show ip ospf int gi0/0/1 | include Network|Prio|Timer
+      - show ip ospf int gi0/0/2 | include Network|Prio|Timer
+      - show ip route | inc 0.0.0.0
+      - show ip route ospf | begin Gateway
+      - show ntp status
+      - show logging | include 10.{U}.20.20
+  - device_info:
+      device_type: cisco_xe
+      ip: 10.{U}.100.2
+      username: admin
+      password: cisco
+    commands:
+      - show vlan brief
+      - show ip ospf | include ID|Ref
+      - show ip ospf neigh
+      - show ip ospf int brief
+      - show ip ospf int gi1/0/1 | include Network|Prio|Timer
+      - show ip ospf int gi1/0/2 | include Network|Prio|Timer
+      - show ip ospf int vlan 20 | include Passive
+      - show ip route ospf | begin Gateway
+      - show ntp status
+      - show logging | include 10.{U}.20.20
+      - traceroute 192.0.2.69
+  - device_info:
+      device_type: cisco_xe
+      ip: 10.{U}.100.3
+      username: admin
+      password: cisco
+    commands:
+      - show ip ospf | include ID|Ref
+      - show ip ospf neigh
+      - show ip ospf int brief
+      - show ip ospf int gi0/0/1 | include Network|Prio|Timer
+      - show ip ospf int gi0/0/2 | include Network|Prio|Timer
+      - show ip route ospf | begin Gateway
+      - show logging | include 10.{U}.20.20
+      - show ntp status
+      - show tcp brief
+      - show ip ssh
