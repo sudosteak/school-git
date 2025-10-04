@@ -3,14 +3,14 @@
 # https://github.com/ayalac1111/x-remote
 
 
-# Replace {username} with your username
-output_file: {username}-w06-tsk4.txt
+# Replace pull0037 with your username
+output_file: pull0037-w06-tsk4.txt
 
 # Devices to collect information from
 devices:
   - device_info:
       device_type: cisco_xe
-      ip: 10.{U}.100.1
+      ip: 10.162.100.1
       username: admin
       password: cisco
     commands:
@@ -18,7 +18,7 @@ devices:
       - show ip ospf interface gi0/0/0
   - device_info:
       device_type: cisco_xe
-      ip: 10.{U}.100.3
+      ip: 10.162.100.3
       username: admin
       password: cisco
     commands:
@@ -27,7 +27,7 @@ devices:
       - show ip cef 10.{partner}.100.5
   - device_info:
       device_type: mikrotik_routeros
-      ip: 10.{U}.45.5
+      ip: 10.162.45.5
       username: admin
       password: admin
     commands:

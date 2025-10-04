@@ -3,14 +3,14 @@
 # https://github.com/ayalac1111/x-remote
 
 
-# Replace {username} with your username and {U} with your U number
-output_file: {username}-w06-tsk2.txt
+# Replace pull0037 with your username and 162 with your U number
+output_file: pull0037-w06-tsk2.txt
 
 # Devices to collect information from
 devices:
   - device_info:
       device_type: mikrotik_routeros
-      ip: 10.{U}.45.4
+      ip: 10.162.45.4
       username: admin
       password: admin
     commands:
@@ -22,7 +22,7 @@ devices:
       - /routing route print where ospf
   - device_info:
       device_type: mikrotik_routeros
-      ip: 10.{U}.45.5
+      ip: 10.162.45.5
       username: admin
       password: admin
     commands:
@@ -32,5 +32,5 @@ devices:
       - /routing ospf neighbor print
       - /routing ospf interface-template print
       - /routing route print where ospf
-      - /ping count=2 10.{U}.45.4
+      - /ping count=2 10.162.45.4
 
