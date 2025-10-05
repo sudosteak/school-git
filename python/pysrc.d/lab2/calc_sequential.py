@@ -16,7 +16,7 @@ print("Hello, " + user_name + "!")
 first_operand = float(input("Enter the first operand: "))
 second_operand = float(input("Enter the second operand: "))
 
-# Perform arithmetic calculations and display result.
+# Perform arithmetic calculations and display the result.
 sum_result = first_operand + second_operand
 difference = first_operand - second_operand
 
