@@ -11,8 +11,8 @@
 def add(num1, num2):
     return num1 + num2
 
-number1 = int(input("enter a number: "))
-number2 = int(input("enter another number: "))
+number_1 = int(input("enter a number: "))
+number_2 = int(input("enter another number: "))
 
-result = add(number1, number2)
+result = add(number_1, number_1)
 print(f"the sum is: {result}")
