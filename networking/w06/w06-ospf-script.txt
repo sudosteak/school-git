@@ -1,11 +1,12 @@
-! OSPF Configuration Script for pull0037 Network
-! u = 162
-! x = ?
+! OSPF Configuration Script for {user} Network
+! {u} = your magic number
+! {x} = the switch number
+! {user} = your college id
 
 ! basic config
-! edge router - pull0037-EDGE
+! edge router - {user}-EDGE
 
-hostname pull0037-EDGE
+hostname {user}-EDGE
 enable secret class
 username admin privilege 15 secret cisco
 service password-encryption
@@ -25,31 +26,31 @@ crypto key gen rsa general-keys modulus 2048
 no ip domain-lookup
 
 ntp master 4
-logging host 10.162.20.20
+logging host 10.{u}.20.20
 logging trap informational
 logging source-interface lo100
 
 interface lo100
-    ip address 10.162.100.1 255.255.255.255
+    ip address 10.{u}.100.1 255.255.255.255
 exit
 
 interface g0/0/0
-    ip address 203.0.113.162 255.255.255.0
+    ip address 203.0.113.{u} 255.255.255.0
 exit
 
 interface g0/0/1
-    ip address 10.162.12.1 255.255.255.248
+    ip address 10.{u}.12.1 255.255.255.248
 exit
 
 interface g0/0/2
-    ip address 10.162.13.1 255.255.255.248
+    ip address 10.{u}.13.1 255.255.255.248
 exit
 
 no ip tftp source-interface
 
-! dist router - pull0037-DIST
+! dist router - {user}-DIST
 
-hostname pull0037-DIST
+hostname {user}-DIST
 enable secret class
 username admin privilege 15 secret cisco
 service password-encryption
@@ -68,28 +69,28 @@ ip domain-name cnap.cst
 crypto key generate rsa general-keys modulus 2048
 no ip domain-lookup
 
-ntp server 10.162.100.1
-logging host 10.162.20.20
+ntp server 10.{u}.100.1
+logging host 10.{u}.20.20
 logging trap informational
 logging source-interface lo100
 
 interface lo100
-    ip address 10.162.100.3 255.255.255.255
+    ip address 10.{u}.100.3 255.255.255.255
 exit
 
 interface g0/0/1
-    ip address 10.162.13.3 255.255.255.248
+    ip address 10.{u}.13.3 255.255.255.248
 exit
 
 interface g0/0/2
-    ip address 10.162.23.3 255.255.255.248
+    ip address 10.{u}.23.3 255.255.255.248
 exit
 
 no ip tftp source-interface
 
-! core switch - pull0037-CORE
+! core switch - {user}-CORE
 
-hostname pull0037-CORE
+hostname {user}-CORE
 enable secret class
 username cisco privilege 15 secret class
 service password-encryption
@@ -109,35 +110,35 @@ crypto key generate rsa general-keys modulus 2048
 no ip domain-lookup
 ip routing
 
-ntp server 10.162.100.1
-logging host 10.162.20.20
+ntp server 10.{u}.100.1
+logging host 10.{u}.20.20
 logging trap informational
 logging source-interface lo100
 
 vlan 20
-    name pull0037-VLAN20
+    name {user}-VLAN20
 exit
 
 vlan 666
-    name pull0037-VLAN666
+    name {user}-VLAN666
 exit
 
 interface lo100
-    ip address 10.162.100.1 255.255.255.255
+    ip address 10.{u}.100.1 255.255.255.255
 exit
 
 interface g{x}/0/1
     no switchport
-    ip address 10.162.12.2 255.255.255.248
+    ip address 10.{u}.12.2 255.255.255.248
 exit
 
 interface g{x}/0/2
     no switchport
-    ip address 10.162.23.2 255.255.255.248
+    ip address 10.{u}.23.2 255.255.255.248
 exit
 
 interface vlan20
-    ip address 10.162.20.2 255.255.255.0
+    ip address 10.{u}.20.2 255.255.255.0
 exit
 
 interface g{x}/0/20
@@ -153,55 +154,55 @@ ip route 0.0.0.0 0.0.0.0 g0/0/0 203.0.113.254
 
 ! on edge router
 
-router ospf 162
-    router-id 10.162.100.1
+router ospf {u}
+    router-id 10.{u}.100.1
     auto ref 10000
 exit
 
 interface lo100
-    ip ospf 162 area 0
+    ip ospf {u} area 0
 exit
 
 interface range g0/0/1-2
-    ip ospf 162 area 0
+    ip ospf {u} area 0
 exit
 
 ! on core switch
 
-router ospf 162
-    router-id 10.162.100.2
+router ospf {u}
+    router-id 10.{u}.100.2
     auto ref 10000
 exit
 
 interface lo100
-    ip ospf 162 area 0
+    ip ospf {u} area 0
 exit
 
 interface range g{x}/0/1-2 g{x}/0/20
-    ip ospf 162 area 0
+    ip ospf {u} area 0
 exit
 
 interface vlan20
-    ip ospf 162 area 0
+    ip ospf {u} area 0
 exit
 
-router ospf 162
+router ospf {u}
     passive-interface vlan20
 exit
 
 ! on dist router
 
-router ospf 162
-    router-id 10.162.100.3
+router ospf {u}
+    router-id 10.{u}.100.3
     auto ref 10000
 exit
 
 interface lo100
-    ip ospf 162 area 0
+    ip ospf {u} area 0
 exit
 
 interface range g0/0/1-2
-    ip ospf 162 area 0
+    ip ospf {u} area 0
 exit
 
 ! change ospf network type to p2p on edge-dist
@@ -219,7 +220,7 @@ interface range g0/0/1-2
 exit
 
 interface g0/0/2
-    ip ospf priority 162
+    ip ospf priority {u}
 exit
 
 ! Reduce OSPF timers: set Hello = 3 and Dead = 10 (confirm these are compatible with the neighbour). On CORE–DIST:
@@ -236,17 +237,17 @@ clear ip ospf process
 ! on dist router
 
 interface g0/0/2
-    ip ospf priority 162
+    ip ospf priority {u}
     ip ospf hello-interval 3
     ip ospf dead-interval 10
 exit
 
 clear ip ospf process
 
-! update ospf router-id to 0.0.0.162 on edge router
+! update ospf router-id to 0.0.0.{u} on edge router
 
-router ospf 162
-    router-id 0.0.0.162
+router ospf {u}
+    router-id 0.0.0.{u}
 exit
 
 clear ip ospf process
