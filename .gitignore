@@ -8,3 +8,6 @@
 .obsidian/
 github-obsidian
 github-obsidian.pub
+
+# pycharm
+.idea/
