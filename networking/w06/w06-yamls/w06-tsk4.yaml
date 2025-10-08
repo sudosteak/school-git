@@ -23,7 +23,7 @@ devices:
       password: cisco
     commands:
       - show ip route ospf | begin Gateway
-      - show ip ospf databse external
+      - show ip ospf database external
       - show ip cef 10.{partner}.100.5
   - device_info:
       device_type: mikrotik_routeros
