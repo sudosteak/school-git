@@ -307,3 +307,26 @@ clear ip ospf process
 ! upload to tftp server
 tftp -i 192.0.2.69 put {user}-w06-tsk2.txt
 
+! task 3
+
+! on dist router
+
+clear ip ospf process
+yes
+
+! from cloud-spk
+/tool traceroute 192.0.2.69 count=1
+! also
+/ping 192.0.2.69 count=5
+
+! backup that shit right now!!!!
+! on cloud-gw
+/system backup save name={user}-cloud-gw.backup
+! on cloud-spk
+/system backup save name={user}-cloud-spk.backup
+
+! run the python script
+.\x_remote.py .\w06-tsk3.yaml
+
+! upload to tftp server
+tftp -i 192.0.2.69 put {user}-w06-tsk3.txt
