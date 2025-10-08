@@ -157,6 +157,7 @@ ip route 0.0.0.0 0.0.0.0 g0/0/0 203.0.113.254
 router ospf {u}
     router-id 10.{u}.100.1
     auto ref 10000
+    default-information originate
 exit
 
 interface lo100
@@ -208,16 +209,12 @@ exit
 ! change ospf network type to p2p on edge-dist
 ! on edge router
 
-interface range g0/0/1-2
+interface g0/0/1
     ip ospf network point-to-point
 exit
 
 ! change network type to p2p on the edge-dist link & make dist win the DR election
 ! on dist router
-
-interface range g0/0/1-2
-    ip ospf network point-to-point
-exit
 
 interface g0/0/2
     ip ospf priority {u}
@@ -225,6 +222,10 @@ exit
 
 ! Reduce OSPF timers: set Hello = 3 and Dead = 10 (confirm these are compatible with the neighbour). On CORE–DIST:
 ! on core switch
+
+interface g{x}/0/1
+    ip ospf network point-to-point
+exit
 
 interface g{x}/0/2
     ip ospf priority 0
@@ -251,4 +252,58 @@ router ospf {u}
 exit
 
 clear ip ospf process
+
+! TASK 2
+! on mikrotik CLOUD-GW
+
+/interface set 0 name=ether1
+/interface set 1 name=ether2
+
+/system identity set name={user}-CLOUD-GW
+
+/interface bridge add name=Lo100
+
+/ip addr add address=10.{u}.45.4/29 interface=ether1 network=10.{u}.45.0
+/ip addr add address=10.{u}.23.4/29 interface=ether2 network=10.{u}.23.0
+/ip addr add address=10.{u}.100.4/32 interface=Lo100 network=10.{u}.100.4
+
+/routing ospf instance add name=OSPF-{u} router-id=10.{u}.100.4
+
+/routing ospf area add instance=OSPF-{u} name=AREA-0 area-id=0.0.0.0
+
+/routing ospf interface-template add area=AREA-0 interfaces=Lo100
+/routing ospf interface-template add area=AREA-0 interfaces=ether1
+/routing ospf interface-template add area=AREA-0 interfaces=ether2 priority=255
+
+! on mikrotik CLOUD-SPK
+
+/system identity set name={user}-CLOUD-SPK
+
+/interface bridge add name=Lo100
+/interface bridge add name=Lo5
+
+/ip addr add address=10.{u}.45.5/29 interface=ether1 network=10.{u}.45.0
+/ip addr add address=10.{u}.100.5/32 interface=Lo100 network=10.{u}.100.5
+/ip addr add address=10.{u}.5.5/24 interface=Lo5 network=10.{u}.5.0
+
+/routing ospf instance add name=OSPF-{u} router-id=10.{u}.100.5
+
+/routing ospf area add instance=OSPF-{u} name=AREA-0 area-id=0.0.0.0
+
+/routing ospf interface-template add area=AREA-0 interfaces=Lo100
+/routing ospf interface-template add area=AREA-0 interfaces=Lo5
+/routing ospf interface-template add area=AREA-0 interfaces=ether1
+
+! backup that shit right now!!!!
+! on cloud-gw
+/system backup save name={user}-cloud-gw.backup
+! on cloud-spk
+/system backup save name={user}-cloud-spk.backup
+
+! run the python script
+
+.\x_remote.py .\w06-tsk2.yaml
+
+! upload to tftp server
+tftp -i 192.0.2.69 put {user}-w06-tsk2.txt
 
