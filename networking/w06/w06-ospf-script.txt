@@ -330,3 +330,18 @@ yes
 
 ! upload to tftp server
 tftp -i 192.0.2.69 put {user}-w06-tsk3.txt
+
+! task 4
+! replace {partner} with the partner's magic number
+
+! on edge router
+
+interface g0/0/0
+    ip ospf 162 area 0
+exit
+
+show ip route 10.{partner}.100.5
+
+.\x_remote.py .\w06-tsk4.yaml
+
+tftp -i 192.0.2.69 put {user}-w06-tsk4.txt
