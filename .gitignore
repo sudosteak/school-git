@@ -1,9 +1,6 @@
 # Ignore GitHub configuration directory
 .github/
 
-# Ignore resources directory
-.resources/
-
 # Ignore obsidian vault shit
 .obsidian/
 github-obsidian
@@ -11,3 +8,5 @@ github-obsidian.pub
 
 # pycharm
 .idea/
+
+.trunk
