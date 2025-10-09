@@ -35,16 +35,21 @@ interface lo100
 exit
 
 interface g0/0/0
+    no shutdown
     ip address 203.0.113.{u} 255.255.255.0
 exit
 
 interface g0/0/1
+    no shutdown
     ip address 10.{u}.12.1 255.255.255.248
 exit
 
 interface g0/0/2
+    no shutdown
     ip address 10.{u}.13.1 255.255.255.248
 exit
+
+ip route 0.0.0.0 0.0.0.0 g0/0/0 203.0.113.254
 
 no ip tftp source-interface
 
@@ -79,10 +84,12 @@ interface lo100
 exit
 
 interface g0/0/1
+    no shutdown
     ip address 10.{u}.13.3 255.255.255.248
 exit
 
 interface g0/0/2
+    no shutdown
     ip address 10.{u}.23.3 255.255.255.248
 exit
 
@@ -124,15 +131,17 @@ vlan 666
 exit
 
 interface lo100
-    ip address 10.{u}.100.1 255.255.255.255
+    ip address 10.{u}.100.2 255.255.255.255
 exit
 
 interface g{x}/0/1
     no switchport
+    no shutdown
     ip address 10.{u}.12.2 255.255.255.248
 exit
 
 interface g{x}/0/2
+    no shutdown
     no switchport
     ip address 10.{u}.23.2 255.255.255.248
 exit
@@ -148,9 +157,6 @@ interface g{x}/0/20
 exit
 
 no ip tftp source-interface
-
-! default route on edge router
-ip route 0.0.0.0 0.0.0.0 g0/0/0 203.0.113.254
 
 ! on edge router
 
