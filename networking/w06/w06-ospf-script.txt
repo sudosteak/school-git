@@ -281,6 +281,8 @@ clear ip ospf process
 /routing ospf interface-template add area=AREA-0 interfaces=ether1
 /routing ospf interface-template add area=AREA-0 interfaces=ether2 priority=255
 
+/routing ospf interface-template set interface=ether2 hello-interval=3s dead-interval=10s
+
 ! on mikrotik CLOUD-SPK
 
 /system identity set name={user}-CLOUD-SPK
