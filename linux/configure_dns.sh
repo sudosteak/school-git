@@ -222,7 +222,7 @@ service iptables save || echo "WARNING: could not save iptables rules"
 
 systemctl restart named || { echo "ERROR: named failed to restart"; journalctl -xeu named; exit 1; }
 echo "==================== configuration complete for ${role} ===================="
-netstat -tulpn | grep :53 || true
+netstat -tulpn | grep named || true
 echo ""
 iptables -L INPUT -n --line-numbers 
 echo ""
