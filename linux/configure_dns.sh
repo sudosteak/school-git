@@ -27,6 +27,10 @@ systemctl enable --now named iptables
 
 cp -a /etc/named.conf{,.bak.$(date +%s)} 2>/dev/null || true
 
+echo ""
+echo "==================== named configuration for ${HOSTNAME} ===================="
+echo ""
+
 if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
     cat >/etc/named.conf <<EOF
 options {
