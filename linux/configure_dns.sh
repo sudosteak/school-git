@@ -27,7 +27,7 @@ systemctl enable --now named iptables
 
 cp -a /etc/named.conf{,.bak.$(date +%s)} 2>/dev/null || true
 
-if [[ "$hostname" == "pull0037-SRV.example48.lab" ]]; then
+if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
     cat >/etc/named.conf <<EOF
 options {
     listen-on port 53 { 127.0.0.1; ${server}; };
@@ -137,7 +137,7 @@ EOF
 fi
 
 # Add || true to named-checkzone commands (may fail on first run)
-if [[ "$hostname" == "pull0037-SRV.example48.lab" ]]; then
+if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
     cat >/var/named/fwd.${domain} <<EOF
 \$TTL 86400
 @   IN  SOA ns1.${domain}.  dnsadmin.${domain}. (
@@ -221,7 +221,7 @@ echo ""
 iptables -L INPUT -n --line-numbers 
 echo ""
 
-if [[ "$hostname" == "pull0037-SRV.example48.lab" ]]; then
+if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
     echo "digging ns1 (${server})"
     dig -x ${server}
 
