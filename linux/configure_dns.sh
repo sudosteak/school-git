@@ -175,20 +175,21 @@ search ${domain}, localhost
 nameserver ${server}, 192.168.48.1
 EOF
 
-    chown root:named /var/named/fwd.${domain} /var/named/rvs.${domain}
+    chown root:named /var/named/fwd.${domain} /var/named/rvs.${domain} /etc/resolv.conf
     
     named-checkzone forward /var/named/fwd.${domain} || { echo "WARNING: forward zone check failed"; }
     named-checkzone reverse /var/named/rvs.${domain} || { echo "WARNING: reverse zone check failed"; }
 
     /usr/sbin/named-checkconf -z /etc/named.conf || { echo "ERROR: named.conf validation failed"; exit 1; }
 else
-    mkdir -p /var/named/slaves
-    chown root:named /var/named/slaves
-
     cat >/etc/resolv.conf <<EOF
 search ${domain}, localhost 
 nameserver ${server}
 EOF
+
+    mkdir -p /var/named/slaves
+    chown root:named /var/named/slaves /etc/resolv.conf
+
     /usr/sbin/named-checkconf -z /etc/named.conf
     
     systemctl restart named
