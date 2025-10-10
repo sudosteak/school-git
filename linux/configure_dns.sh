@@ -7,8 +7,8 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # determine server role
-read -p "configure as (master/slave): " ROLE
-role=${role:-master}
+read -p "configure as (m)aster or (s)lave: " role
+role=${role,,} # to lowercase
 
 domain="example48.lab"
 server="172.16.30.48"
@@ -16,16 +16,16 @@ alias="172.16.32.48"
 client="172.16.31.48"
 net="172.16.0.0/16"
 rev="16.172.in-addr.arpa"
-serial="$(date +%Y%m%d%H)"
 
-if [[ "$role" != "master" && "$role" != "slave" ]]; then
+if [[ "$role" != "m" && "$role" != "s" ]]; then
     echo "invalid role: $role"
     exit 1
 fi
 
-# query if bind and bind-utils is insatlled
+# query if bind and bind-utils is installed
 if ! rpm -q bind bind-utils iptables-services >/dev/null 2>&1; then
     echo "installing bind, bind-utils, and iptables-services..."
+    dnf install -y bind bind-utils iptables-services
 fi
 
 iptables -F || true
@@ -34,7 +34,7 @@ systemctl enable --now named iptables
 
 cp -a /etc/named.conf{,.bak.$(date +%s)} 2>/dev/null || true
 
-if [[ "$role" == "master" ]]; then
+if [[ "$role" == "m" ]]; then
     cat >/etc/named.conf <<EOF
     options {
         listen-on port 53 { 127.0.0.1; ${server}; };
@@ -113,7 +113,7 @@ else
         dnssec-enable yes;
         dnssec-validation yes;
 
-        bindkeys-file "/etc/namd.root.key";
+        bindkeys-file "/etc/named.root.key";
 
         managed-keys-directory "/var/named/dynamic";
 
@@ -144,7 +144,7 @@ else
     // slave for reverse zone ${domain}
     zone "${rev}" IN {
         type slave;
-        file "slave/rvs.${domain}";
+        file "slaves/rvs.${domain}";
         masters { ${server}; };
     };
 
@@ -153,7 +153,7 @@ else
 EOF
 fi
 
-if [[ "$ROLE" == "master" ]]; then
+if [[ "$role" == "m" ]]; then
     /bin/cat >/var/named/fwd.${domain} <<EOF
     \$TTL 86400
     @   IN  SOA ns1.${domain}.  dnsadmin.${domain}. (
@@ -195,6 +195,16 @@ else
     chown root:named /var/named/slaves
     
     /usr/sbin/named-checkconf -z /etc/named.conf
+    
+    systemctl restart named
+    sleep 3  # allow time for zone transfer
+    
+    if [[ ! -f /var/named/slaves/fwd.${domain} ]]; then
+        echo "warning: forward zone not transferred yet"
+    fi
+    if [[ ! -f /var/named/slaves/rvs.${domain} ]]; then
+        echo "warning: reverse zone not transferred yet"
+    fi
 fi
 
 
@@ -217,7 +227,7 @@ echo ""
 journalctl --no-pager -u named | tail -20
 echo ""
 
-if [[ "$role" == "master" ]]; then
+if [[ "$role" == "m" ]]; then
     echo "digging ns1 (${server})"
     dig -x ${server}
 
@@ -229,7 +239,7 @@ if [[ "$role" == "master" ]]; then
 
     echo ""
     echo "master setup done"
-elif [[ "$role" == "slave" ]]; then
+elif [[ "$role" == "s" ]]; then
     echo "digging ns1 (${server})"
     dig -x ${server}
 
