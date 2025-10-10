@@ -171,7 +171,7 @@ EOF
 EOF
 
     cat >/etc/resolv.conf <<EOF
-search $domain localhost
+search localhost $domain
 nameserver $server
 EOF
 
@@ -183,7 +183,7 @@ EOF
     /usr/sbin/named-checkconf -z /etc/named.conf || { echo "ERROR: named.conf validation failed"; exit 1; }
 else
     cat >/etc/resolv.conf <<EOF
-search $domain localhost
+search localhost $domain
 nameserver $server
 EOF
 
