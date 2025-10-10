@@ -10,7 +10,6 @@ fi
 
 domain="example48.lab"
 server="172.16.30.48"
-hostname=$(hostname -f)
 alias="172.16.32.48"
 client="172.16.31.48"
 net="172.16.0.0/16"
