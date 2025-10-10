@@ -226,8 +226,6 @@ netstat -tulpn | grep named || true
 echo ""
 iptables -L INPUT -n --line-numbers 
 echo ""
-journalctl --no-pager -u named | tail -20
-echo ""
 
 if [[ "$role" == "m" ]]; then
     echo "digging ns1 (${server})"
