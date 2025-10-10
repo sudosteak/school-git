@@ -172,7 +172,7 @@ EOF
 
     cat >/etc/resolv.conf <<EOF
 search $domain localhost
-nameserver $server 192.168.48.1
+nameserver $server
 EOF
 
     chown root:named /var/named/fwd.${domain} /var/named/rvs.${domain}
