@@ -153,6 +153,7 @@ else
 EOF
 fi
 
+# Add || true to named-checkzone commands (may fail on first run)
 if [[ "$role" == "m" ]]; then
     /bin/cat >/var/named/fwd.${domain} <<EOF
 \$TTL 86400
@@ -186,10 +187,10 @@ EOF
 EOF
     chown root:named /var/named/fwd.${domain} /var/named/rvs.${domain}
     
-    named-checkzone forward /var/named/fwd.${domain}
-    named-checkzone reverse /var/named/rvs.${domain}
+    named-checkzone forward /var/named/fwd.${domain} || { echo "WARNING: forward zone check failed"; }
+    named-checkzone reverse /var/named/rvs.${domain} || { echo "WARNING: reverse zone check failed"; }
 
-    /usr/sbin/named-checkconf -z /etc/named.conf
+    /usr/sbin/named-checkconf -z /etc/named.conf || { echo "ERROR: named.conf validation failed"; exit 1; }
 else
     mkdir -p /var/named/slaves
     chown root:named /var/named/slaves
@@ -209,16 +210,19 @@ fi
 
 
 # firewall rules: allow client and server networks access to the dns (53) port and reject alias ip
-iptables -I INPUT -p udp --dport 53 -s ${net} -j ACCEPT
-iptables -I INPUT -p tcp --dport 53 -s ${net} -j ACCEPT
+iptables -I INPUT -p udp --dport 53 -s ${net} -j ACCEPT || true
+iptables -I INPUT -p tcp --dport 53 -s ${net} -j ACCEPT || true
 
 # block dns queries from alias ip 
-iptables -I INPUT -p udp --dport 53 -s ${alias} -j REJECT
-iptables -I INPUT -p tcp --dport 53 -s ${alias} -j REJECT
+iptables -I INPUT -p udp --dport 53 -s ${alias} -j REJECT || true
+iptables -I INPUT -p tcp --dport 53 -s ${alias} -j REJECT || true
 
-systemctl restart named
+# Save iptables rules so they persist after reboot
+service iptables save || echo "WARNING: could not save iptables rules"
+
+systemctl restart named || { echo "ERROR: named failed to restart"; journalctl -xeu named; exit 1; }
 echo "==================== configuration complete for ${role} ===================="
-ss -tulpn | grep :53 || true
+netstat -tulpn | grep :53 || true
 echo ""
 iptables -L INPUT -n --line-numbers 
 echo ""
