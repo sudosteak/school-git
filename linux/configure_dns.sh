@@ -220,7 +220,9 @@ iptables -I INPUT -p tcp --dport 53 -s "172.16.32.0/24" -j REJECT || true
 service iptables save || echo "WARNING: could not save iptables rules"
 
 systemctl restart named || { echo "ERROR: named failed to restart"; journalctl -xeu named; exit 1; }
+echo ""
 echo "==================== configuration complete for ${HOSTNAME} ===================="
+echo ""
 netstat -tulpn | grep :53 || true
 echo ""
 iptables -L INPUT -n --line-numbers 
