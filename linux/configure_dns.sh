@@ -218,11 +218,9 @@ iptables -I INPUT -p tcp --dport 53 -s ${alias} -j REJECT
 
 systemctl restart named
 echo "==================== configuration complete for ${role} ===================="
-cat /etc/named.conf
-echo ""
 ss -tulpn | grep :53 || true
 echo ""
-iptables -L INPUT -n --line-numbers | grep -E "(53|dpt:53)" || true
+iptables -L INPUT -n --line-numbers 
 echo ""
 journalctl --no-pager -u named | tail -20
 echo ""
