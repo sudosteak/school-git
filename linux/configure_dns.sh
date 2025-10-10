@@ -7,20 +7,14 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # determine server role
-read -p "configure as (m)aster or (s)lave: " role
-role=${role,,} # to lowercase
 
 domain="example48.lab"
 server="172.16.30.48"
+hostname=$(hostname -f)
 alias="172.16.32.48"
 client="172.16.31.48"
 net="172.16.0.0/16"
 rev="16.172.in-addr.arpa"
-
-if [[ "$role" != "m" && "$role" != "s" ]]; then
-    echo "invalid role: $role"
-    exit 1
-fi
 
 # query if bind and bind-utils is installed
 if ! rpm -q bind bind-utils iptables-services >/dev/null 2>&1; then
@@ -34,7 +28,7 @@ systemctl enable --now named iptables
 
 cp -a /etc/named.conf{,.bak.$(date +%s)} 2>/dev/null || true
 
-if [[ "$role" == "m" ]]; then
+if [[ "$hostname" == "pull0037-SRV.example48.lab" ]]; then
     cat >/etc/named.conf <<EOF
 options {
     listen-on port 53 { 127.0.0.1; ${server}; };
@@ -144,7 +138,7 @@ EOF
 fi
 
 # Add || true to named-checkzone commands (may fail on first run)
-if [[ "$role" == "m" ]]; then
+if [[ "$hostname" == "pull0037-SRV.example48.lab" ]]; then
     cat >/var/named/fwd.${domain} <<EOF
 \$TTL 86400
 @   IN  SOA ns1.${domain}.  dnsadmin.${domain}. (
@@ -185,7 +179,11 @@ EOF
 else
     mkdir -p /var/named/slaves
     chown root:named /var/named/slaves
-    
+
+    cat >/etc/resolv.conf <<EOF
+search ${domain}, localhost 
+nameserver ${server}
+EOF
     /usr/sbin/named-checkconf -z /etc/named.conf
     
     systemctl restart named
@@ -213,12 +211,12 @@ service iptables save || echo "WARNING: could not save iptables rules"
 
 systemctl restart named || { echo "ERROR: named failed to restart"; journalctl -xeu named; exit 1; }
 echo "==================== configuration complete for ${role} ===================="
-netstat -tulpn | grep named || true
+netstat -tulpn | grep :53 || true
 echo ""
 iptables -L INPUT -n --line-numbers 
 echo ""
 
-if [[ "$role" == "m" ]]; then
+if [[ "$hostname" == "pull0037-SRV.example48.lab" ]]; then
     echo "digging ns1 (${server})"
     dig -x ${server}
 
@@ -230,7 +228,7 @@ if [[ "$role" == "m" ]]; then
 
     echo ""
     echo "master setup done"
-elif [[ "$role" == "s" ]]; then
+else
     echo "digging ns1 (${server})"
     dig -x ${server}
 
@@ -242,9 +240,6 @@ elif [[ "$role" == "s" ]]; then
 
     echo ""
     echo "slave setup done"
-else
-    echo "error exiting script"
-    exit 1
 fi
 
 # END OF SCRIPT
