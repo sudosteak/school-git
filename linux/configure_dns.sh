@@ -227,7 +227,9 @@ netstat -tulpn | grep :53 || true
 echo ""
 iptables -L INPUT -n --line-numbers 
 echo ""
-
+echo ""
+echo "==================== dig for $server, $client and $alias ===================="
+echo ""
 if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
     echo "digging ns1 (${server})"
     dig -x ${server}
