@@ -36,126 +36,116 @@ cp -a /etc/named.conf{,.bak.$(date +%s)} 2>/dev/null || true
 
 if [[ "$role" == "m" ]]; then
     cat >/etc/named.conf <<EOF
-    options {
-        listen-on port 53 { 127.0.0.1; ${server}; };
-        listen-on-v6 port 53 { ::1; };
-        directory "/var/named";
-        dump-file "/var/named/data/cache_dump.db";
-        statistics-file "/var/named/data/named_stats.txt";
-        memstatistics-file "/var/named/data/named_mem_stats.txt";
-        secroots-file "/var/named/data/named.secroots";
-        recursing-file "/var/named/data/named.recursing";
-        allow-query { localhost; ${net}; };
-        allow-recursion { ${net}; };
-        //allow-transfer { localhost; ${client}; }; // list of slaves allowed to transfer zone
+options {
+    listen-on port 53 { 127.0.0.1; ${server}; };
+    listen-on-v6 port 53 { ::1; };
+    directory "/var/named";
+    dump-file "/var/named/data/cache_dump.db";
+    statistics-file "/var/named/data/named_stats.txt";
+    memstatistics-file "/var/named/data/named_mem_stats.txt";
+    secroots-file "/var/named/data/named.secroots";
+    recursing-file "/var/named/data/named.recursing";
+    allow-query { localhost; ${net}; };
+    allow-recursion { ${net}; };
+    //allow-transfer { localhost; ${client}; }; // list of slaves allowed to transfer zone
 
-        recursion yes;
+    recursion yes;
 
-        dnssec-enable yes;
-        dnssec-validation yes;
+    dnssec-enable yes;
+    dnssec-validation yes;
 
-        managed-keys-directory "/var/named/dynamic";
+    managed-keys-directory "/var/named/dynamic";
 
-        pid-file "/run/named/named.pid";
-        session-keyfile "/run/named/session.key";    
-        
-        include "/etc/crypto-policies/back-ends/bind.config";
+    pid-file "/run/named/named.pid";
+    session-keyfile "/run/named/session.key";    
+
+    include "/etc/crypto-policies/back-ends/bind.config";
+};
+
+logging {
+    channel default_debug {
+        file "data/named.run";
+        severity dynamic;
     };
+};
 
-    logging {
-        channel default_debug {
-            file "data/named.run";
-            severity dynamic;
-        };
-    };
+// root name server in "hints" file
+zone "." IN {
+    type hint;
+    file "named.ca";
+};
 
-    // root name server in "hints" file
-    zone "." IN {
-        type hint;
-        file "named.ca";
-    };
+// master for forward zone ${domain}
+zone "${domain}" IN {
+    type master;
+    file "fwd.${domain}";
+    allow-update { none; };
+    allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
+};
 
-    // master for forward zone ${domain}
-    zone "${domain}" IN {
-        type master;
-        file "fwd.${domain}";
-        allow-update { none; };
-        allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
-    };
+// master for reverse zone ${domain}
+zone "${rev}" IN {
+    type master;
+    file "rvs.${domain}";
+    allow-update { none; };
+    allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
+};
 
-    // master for reverse zone ${domain}
-    zone "${rev}" IN {
-        type master;
-        file "rvs.${domain}";
-        allow-update { none; };
-        allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
-    };
-
-    include "/etc/named.rfc1912.zones";
-    include "/etc/named.root.key";
+include "/etc/named.rfc1912.zones";
+include "/etc/named.root.key";
 EOF
 else
     cat >/etc/named.conf <<EOF
-    options {
-        listen-on port 53 { 127.0.0.1; ${client}; };
-        listen-on-v6 port 53 { ::1; };
-        directory "/var/named";
-        dump-file "/var/named/data/cache_dump.db";
-        statistics-file "/var/named/data/named_stats.txt";
-        memstatistics-file "/var/named/data/named_mem_stats.txt";
-        secroots-file "/var/named/data/named.secroots";
-        recursing-file "/var/named/data/named.recursing";
-        allow-query { localhost; ${net}; };
-        allow-transfer { none; };
-
-        recursion yes;
-
-        dnssec-enable yes;
-        dnssec-validation yes;
-
-        bindkeys-file "/etc/named.root.key";
-
-        managed-keys-directory "/var/named/dynamic";
-
-        pid-file "/run/named/named.pid";
-        session-keyfile "/run/named/session.key";
+options {
+    listen-on port 53 { 127.0.0.1; ${client}; };
+    listen-on-v6 port 53 { ::1; };
+    directory "/var/named";
+    dump-file "/var/named/data/cache_dump.db";
+    statistics-file "/var/named/data/named_stats.txt";
+    memstatistics-file "/var/named/data/named_mem_stats.txt";
+    secroots-file "/var/named/data/named.secroots";
+    recursing-file "/var/named/data/named.recursing";
+    allow-query { localhost; ${net}; };
+    allow-transfer { none; };
+    recursion yes;
+    dnssec-enable yes;
+    dnssec-validation yes;
+    bindkeys-file "/etc/named.root.key";
+    managed-keys-directory "/var/named/dynamic";
+    pid-file "/run/named/named.pid";
+    session-keyfile "/run/named/session.key";
+};
+logging {
+    channel default_debug {
+        file "data/named.run";
+        severity dynamic;
     };
-
-    logging {
-        channel default_debug {
-            file "data/named.run";
-            severity dynamic;
-        };
-    };
-
-    // root name server in "hints" file
-    zone "." IN {
-        type hint;
-        file "named.ca";
-    };
-
-    // slave for forward zone ${domain}
-    zone "${domain}" IN {
-        type slave;
-        file "slaves/fwd.${domain}";
-        masters { ${server}; };
-    };
-
-    // slave for reverse zone ${domain}
-    zone "${rev}" IN {
-        type slave;
-        file "slaves/rvs.${domain}";
-        masters { ${server}; };
-    };
-
-    include "/etc/named.rfc1912.zones";
-    include "/etc/named.root.key";
+};
+// root name server in "hints" file
+zone "." IN {
+    type hint;
+    file "named.ca";
+};
+// slave for forward zone ${domain}
+zone "${domain}" IN {
+    type slave;
+    file "slaves/fwd.${domain}";
+    masters { ${server}; };
+};
+// slave for reverse zone ${domain}
+zone "${rev}" IN {
+    type slave;
+    file "slaves/rvs.${domain}";
+    masters { ${server}; };
+};
+include "/etc/named.rfc1912.zones";
+include "/etc/named.root.key";
 EOF
 fi
 
 # Add || true to named-checkzone commands (may fail on first run)
 if [[ "$role" == "m" ]]; then
-    /bin/cat >/var/named/fwd.${domain} <<EOF
+    cat >/var/named/fwd.${domain} <<EOF
 \$TTL 86400
 @   IN  SOA ns1.${domain}.  dnsadmin.${domain}. (
                     0       ; serial
@@ -165,6 +155,7 @@ if [[ "$role" == "m" ]]; then
                     3H )    ; minimum
 @   IN  NS  ns1.${domain}.
 @   IN  NS  ns2.${domain}.
+@   IN  NS  ftp.${domain}.
 ns1 IN  A   ${server}
 ns2 IN  A   ${client}
 ftp IN  A   ${alias}
@@ -210,12 +201,12 @@ fi
 
 
 # firewall rules: allow client and server networks access to the dns (53) port and reject alias ip
-iptables -I INPUT -p udp --dport 53 -s ${net} -j ACCEPT || true
-iptables -I INPUT -p tcp --dport 53 -s ${net} -j ACCEPT || true
+iptables -I INPUT -p udp --dport 53 -s "172.16.30.0/24" -j ACCEPT || true
+iptables -I INPUT -p tcp --dport 53 -s "172.16.31.0/24" -j ACCEPT || true
 
 # block dns queries from alias ip 
-iptables -I INPUT -p udp --dport 53 -s ${alias} -j REJECT || true
-iptables -I INPUT -p tcp --dport 53 -s ${alias} -j REJECT || true
+iptables -I INPUT -p udp --dport 53 -s "172.16.32.0/24" -j REJECT || true
+iptables -I INPUT -p tcp --dport 53 -s "172.16.32.0/24" -j REJECT || true
 
 # Save iptables rules so they persist after reboot
 service iptables save || echo "WARNING: could not save iptables rules"
