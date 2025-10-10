@@ -8,8 +8,6 @@ fi
 
 # determine server role
 
-HOSTNAME=$(hostname -f)
-
 domain="example48.lab"
 server="172.16.30.48"
 alias="172.16.32.48"
@@ -217,7 +215,7 @@ iptables -I INPUT -p tcp --dport 53 -s "172.16.32.0/24" -j REJECT || true
 service iptables save || echo "WARNING: could not save iptables rules"
 
 systemctl restart named || { echo "ERROR: named failed to restart"; journalctl -xeu named; exit 1; }
-echo "==================== configuration complete for ${role} ===================="
+echo "==================== configuration complete for ${HOSTNAME} ===================="
 netstat -tulpn | grep :53 || true
 echo ""
 iptables -L INPUT -n --line-numbers 
