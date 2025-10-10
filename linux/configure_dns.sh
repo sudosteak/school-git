@@ -1,4 +1,5 @@
 #!/bin/bash
+# lab 4/5
 set -euo pipefail
 
 if [[ $EUID -ne 0 ]]; then
