@@ -8,6 +8,8 @@ fi
 
 # determine server role
 
+HOSTNAME=$(hostname -f)
+
 domain="example48.lab"
 server="172.16.30.48"
 alias="172.16.32.48"
