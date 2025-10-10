@@ -155,34 +155,34 @@ fi
 
 if [[ "$role" == "m" ]]; then
     /bin/cat >/var/named/fwd.${domain} <<EOF
-    \$TTL 86400
-    @   IN  SOA ns1.${domain}.  dnsadmin.${domain}. (
-                        0   ; serial
-                        1D  ; referesh
-                        1H  ; retry
-                        1W  ; expire
-                        3H )    ; minimum
-    @   IN  NS  ns1.${domain}.
-    @   IN  NS  ns2.${domain}.
-    ns1 IN  A   ${server}
-    ns2 IN  A   ${client}
-    ftp IN  A   ${alias}
+\$TTL 86400
+@   IN  SOA ns1.${domain}.  dnsadmin.${domain}. (
+                    0       ; serial
+                    1D      ; refresh
+                    1H      ; retry
+                    1W      ; expire
+                    3H )    ; minimum
+@   IN  NS  ns1.${domain}.
+@   IN  NS  ns2.${domain}.
+ns1 IN  A   ${server}
+ns2 IN  A   ${client}
+ftp IN  A   ${alias}
 EOF
-    /bin/cat >/var/named/rvs.${domain} <<EOF
-    \$TTL 1D
-    @   IN  SOA ns1.${domain}.  dnsadmin.${domain}. (
-                        0   ; serial
-                        1D  ; refresh
-                        1H  ; retry
-                        1W  ; expire
-                        3H )    ; minimum
-    @   IN  NS  ns1.${domain}.
-    @   IN  NS  ns2.${domain}.
-    @   IN  NS  ftp.${domain}.
 
-    48.30   IN  PTR ns1.${domain}.
-    48.31   IN  PTR ns2.${domain}.
-    48.32   IN  PTR ftp.${domain}.
+    cat >/var/named/rvs.${domain} <<EOF
+\$TTL 1D
+@   IN  SOA ns1.${domain}.  dnsadmin.${domain}. (
+                    0       ; serial
+                    1D      ; refresh
+                    1H      ; retry
+                    1W      ; expire
+                    3H )    ; minimum
+@   IN  NS  ns1.${domain}.
+@   IN  NS  ns2.${domain}.
+
+48.30   IN  PTR ns1.${domain}.
+48.31   IN  PTR ns2.${domain}.
+48.32   IN  PTR ftp.${domain}.
 EOF
     chown root:named /var/named/fwd.${domain} /var/named/rvs.${domain}
     
