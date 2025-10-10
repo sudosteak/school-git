@@ -32,6 +32,9 @@ options {
     managed-keys-directory "/var/named/dynamic";
     pid-file "/run/named/named.pid";
     session-keyfile "/run/named/session.key";
+    forward only;
+    forwarders { 1.1.1.1; };
+    listen-on-v6 { none; };
 };
 
 include "/etc/named.rfc1912.zones";
