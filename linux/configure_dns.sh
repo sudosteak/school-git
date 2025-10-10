@@ -171,8 +171,8 @@ EOF
 EOF
 
     cat >/etc/resolv.conf <<EOF
-search ${domain}, localhost 
-nameserver ${server}, 192.168.48.1
+search ${domain} localhost 
+nameserver ${server} 192.168.48.1
 EOF
 
     chown root:named /var/named/fwd.${domain} /var/named/rvs.${domain} /etc/resolv.conf
@@ -183,7 +183,7 @@ EOF
     /usr/sbin/named-checkconf -z /etc/named.conf || { echo "ERROR: named.conf validation failed"; exit 1; }
 else
     cat >/etc/resolv.conf <<EOF
-search ${domain}, localhost 
+search ${domain} localhost
 nameserver ${server}
 EOF
 
