@@ -14,9 +14,7 @@ DOMAIN="example48.lab"
 PRIMARY_IP="172.16.30.48"
 ALIAS_IP="172.16.32.48"
 CLIENT_IP="172.16.31.48"
-CLIENT_NET="172.16.31.0/24"
-SERVER_NET="172.16.30.0/24"
-ALIAS_NET="172.16.32.0/24"
+SUB_NET="172.16.0.0/16"
 REV_30_ZONE="30.16.172.in-addr.arpa"
 REV_32_ZONE="32.16.172.in-addr.arpa"
 SERIAL="$(date +%Y%m%d%H)"
@@ -29,11 +27,11 @@ cp -a /etc/named.conf{,.bak.$(date +%s)} 2>/dev/null || true
 
 if [[ "$ROLE" == "master" ]]; then
     cat >/etc/named.conf <<EOF
-options {
+    options {
     directory "/var/named";
     listen-on port 53 { 127.0.0.1; ${PRIMARY_IP}; ${ALIAS_IP}; };
-    allow-query { 127.0.0.1; ${SERVER_NET}; ${CLIENT_NET}; };
-    allow-transfer { ${CLIENT_NET}; };
+    allow-query { 127.0.0.1; ${SUB_NET}; };
+    allow-transfer { ${SUB_NET}; };
     recursion yes;
     dnssec-validation yes;
     managed-keys-directory "/var/named/dynamic";
@@ -70,7 +68,7 @@ else
 options {
     directory "/var/named";
     listen-on port 53 { 127.0.0.1; ${CLIENT_IP}; };
-    allow-query { 127.0.0.1; ${CLIENT_NET}; ${SERVER_NET}; };
+    allow-query { 127.0.0.1; ${SUB_NET}; };
     recursion yes;
     dnssec-validation yes;
     managed-keys-directory "/var/named/dynamic";
@@ -169,12 +167,12 @@ fi
 
 # firewall: allow server & client nets, block alias net
 for proto in tcp udp; do
-    iptables -C INPUT -p "${proto}" --dport 53 -s ${SERVER_NET} -j ACCEPT 2>/dev/null || \
-        iptables -I INPUT -p "${proto}" --dport 53 -s ${SERVER_NET} -j ACCEPT
-    iptables -C INPUT -p "${proto}" --dport 53 -s ${CLIENT_NET} -j ACCEPT 2>/dev/null || \
-        iptables -I INPUT -p "${proto}" --dport 53 -s ${CLIENT_NET} -j ACCEPT
-    iptables -C INPUT -p "${proto}" --dport 53 -s ${ALIAS_NET} -j REJECT 2>/dev/null || \
-        iptables -I INPUT -p "${proto}" --dport 53 -s ${ALIAS_NET} -j REJECT
+    iptables -C INPUT -p "${proto}" --dport 53 -s ${SUB_NET} -j ACCEPT 2>/dev/null || \
+    iptables -I INPUT -p "${proto}" --dport 53 -s ${SUB_NET} -j ACCEPT
+    iptables -C INPUT -p "${proto}" --dport 53 -s ${SUB_NET} -j ACCEPT 2>/dev/null || \
+    iptables -I INPUT -p "${proto}" --dport 53 -s ${SUB_NET} -j ACCEPT
+    iptables -C INPUT -p "${proto}" --dport 53 -s ${SUB_NET} -j REJECT 2>/dev/null || \
+    iptables -I INPUT -p "${proto}" --dport 53 -s ${SUB_NET} -j REJECT
 done
 service iptables save
 
