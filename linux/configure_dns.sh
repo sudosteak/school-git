@@ -8,179 +8,206 @@ fi
 
 # determine server role
 read -p "configure as (master/slave): " ROLE
-ROLE=${ROLE:-master}
+role=${role:-master}
 
-DOMAIN="example48.lab"
-PRIMARY_IP="172.16.30.48"
-ALIAS_IP="172.16.32.48"
-CLIENT_IP="172.16.31.48"
-ALL_NET="172.16.0.0/16"
-SERVER_NET="172.16.30.0/16"
-CLIENT_NET="172.16.31.0/16"
-ALIAS_NET="172.16.32.0/16"
-REV_30_ZONE="30.16.172.in-addr.arpa"
-REV_32_ZONE="32.16.172.in-addr.arpa"
-SERIAL="$(date +%Y%m%d%H)"
+domain="example48.lab"
+server="172.16.30.48"
+alias="172.16.32.48"
+client="172.16.31.48"
+net="172.16.0.0/16"
+rev="16.172.in-addr.arpa"
+serial="$(date +%Y%m%d%H)"
 
-dnf install -y bind bind-utils iptables-services
+if [[ "$role" != "master" && "$role" != "slave" ]]; then
+    echo "invalid role: $role"
+    exit 1
+fi
+
+# query if bind and bind-utils is insatlled
+if ! rpm -q bind bind-utils iptables-services >/dev/null 2>&1; then
+    echo "installing bind, bind-utils, and iptables-services..."
+fi
+
+iptables -F || true
 systemctl disable --now firewalld || true
 systemctl enable --now named iptables
 
 cp -a /etc/named.conf{,.bak.$(date +%s)} 2>/dev/null || true
 
-if [[ "$ROLE" == "master" ]]; then
+if [[ "$role" == "master" ]]; then
     cat >/etc/named.conf <<EOF
     options {
-    directory "/var/named";
-    listen-on port 53 { 127.0.0.1; ${PRIMARY_IP}; ${ALIAS_IP}; };
-    allow-query { 127.0.0.1; ${ALL_NET}; };
-    allow-transfer { ${CLIENT_NET}; };
-    recursion yes;
-    dnssec-validation yes;
-    managed-keys-directory "/var/named/dynamic";
-    pid-file "/run/named/named.pid";
-    session-keyfile "/run/named/session.key";
-};
+        listen-on port 53 { 127.0.0.1; ${server}; };
+        listen-on-v6 port 53 { ::1; };
+        directory "/var/named";
+        dump-file "/var/named/data/cache_dump.db";
+        statistics-file "/var/named/data/named_stats.txt";
+        memstatistics-file "/var/named/data/named_mem_stats.txt";
+        secroots-file "/var/named/data/named.secroots";
+        recursing-file "/var/named/data/named.recursing";
+        allow-query { localhost; ${net}; };
+        allow-recursion { ${net}; };
+        //allow-transfer { localhost; ${client}; }; // list of slaves allowed to transfer zone
 
-include "/etc/named.rfc1912.zones";
-include "/etc/named.root.key";
+        recursion yes;
 
-zone "${DOMAIN}" IN {
-    type master;
-    file "fwd.${DOMAIN}";
-    notify yes;
-    also-notify { ${CLIENT_IP}; };
-};
+        dnssec-enable yes;
+        dnssec-validation yes;
 
-zone "${REV_30_ZONE}" IN {
-    type master;
-    file "rev.172.16.30.db";
-    notify yes;
-    also-notify { ${CLIENT_IP}; };
-};
+        managed-keys-directory "/var/named/dynamic";
 
-zone "${REV_32_ZONE}" IN {
-    type master;
-    file "rev.172.16.32.db";
-    notify yes;
-    also-notify { ${CLIENT_IP}; };
-};
+        pid-file "/run/named/named.pid";
+        session-keyfile "/run/named/session.key";    
+        
+        include "/etc/crypto-policies/back-ends/bind.config";
+    };
+
+    logging {
+        channel default_debug {
+            file "data/named.run";
+            severity dynamic;
+        };
+    };
+
+    // root name server in "hints" file
+    zone "." IN {
+        type hint;
+        file "named.ca";
+    };
+
+    // master for forward zone ${domain}
+    zone "${domain}" IN {
+        type master;
+        file "fwd.${domain}";
+        allow-update { none; };
+        allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
+    };
+
+    // master for reverse zone ${domain}
+    zone "${rev}" IN {
+        type master;
+        file "rvs.${domain}";
+        allow-update { none; };
+        allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
+    };
+
+    include "/etc/named.rfc1912.zones";
+    include "/etc/named.root.key";
 EOF
 else
     cat >/etc/named.conf <<EOF
-options {
-    directory "/var/named";
-    listen-on port 53 { 127.0.0.1; ${CLIENT_IP}; };
-    allow-query { 127.0.0.1; ${ALL_NET}; };
-    recursion yes;
-    dnssec-validation yes;
-    managed-keys-directory "/var/named/dynamic";
-    pid-file "/run/named/named.pid";
-    session-keyfile "/run/named/session.key";
-};
+    options {
+        listen-on port 53 { 127.0.0.1; ${client}; };
+        listen-on-v6 port 53 { ::1; };
+        directory "/var/named";
+        dump-file "/var/named/data/cache_dump.db";
+        statistics-file "/var/named/data/named_stats.txt";
+        memstatistics-file "/var/named/data/named_mem_stats.txt";
+        secroots-file "/var/named/data/named.secroots";
+        recursing-file "/var/named/data/named.recursing";
+        allow-query { localhost; ${net}; };
+        allow-transfer { none; };
 
-include "/etc/named.rfc1912.zones";
-include "/etc/named.root.key";
+        recursion yes;
 
-zone "${DOMAIN}" IN {
-    type slave;
-    file "slaves/fwd.${DOMAIN}";
-    masters { ${PRIMARY_IP}; ${ALIAS_IP}; };
-};
+        dnssec-enable yes;
+        dnssec-validation yes;
 
-zone "${REV_30_ZONE}" IN {
-    type slave;
-    file "slaves/rev.172.16.30.db";
-    masters { ${PRIMARY_IP}; ${ALIAS_IP}; };
-};
+        bindkeys-file "/etc/namd.root.key";
 
-zone "${REV_32_ZONE}" IN {
-    type slave;
-    file "slaves/rev.172.16.32.db";
-    masters { ${PRIMARY_IP}; ${ALIAS_IP}; };
-};
+        managed-keys-directory "/var/named/dynamic";
+
+        pid-file "/run/named/named.pid";
+        session-keyfile "/run/named/session.key";
+    };
+
+    logging {
+        channel default_debug {
+            file "data/named.run";
+            severity dynamic;
+        };
+    };
+
+    // root name server in "hints" file
+    zone "." IN {
+        type hint;
+        file "named.ca";
+    };
+
+    // slave for forward zone ${domain}
+    zone "${domain}" IN {
+        type slave;
+        file "slaves/fwd.${domain}";
+        masters { ${server}; };
+    };
+
+    // slave for reverse zone ${domain}
+    zone "${rev}" IN {
+        type slave;
+        file "slave/rvs.${domain}";
+        masters { ${server}; };
+    };
+
+    include "/etc/named.rfc1912.zones";
+    include "/etc/named.root.key";
 EOF
 fi
-
 
 if [[ "$ROLE" == "master" ]]; then
-    install -o root -g named -m 0640 /dev/null /var/named/fwd.${DOMAIN}
-    /bin/cat >/var/named/fwd.${DOMAIN} <<EOF
-\$TTL 86400
-@   IN SOA ns1.${DOMAIN}. admin.${DOMAIN}. (
-        ${SERIAL}
-        3600
-        900
-        1209600
-        86400
-)
-    IN NS ns1.${DOMAIN}.
-    IN NS ns2.${DOMAIN}.
-ns1     IN A ${ALIAS_IP}
-ns2     IN A ${CLIENT_IP}
-srv     IN A ${PRIMARY_IP}
-ftp     IN A ${ALIAS_IP}
-client  IN A ${CLIENT_IP}
+    /bin/cat >/var/named/fwd.${domain} <<EOF
+    \$TTL 86400
+    @   IN  SOA ns1.${domain}.  dnsadmin.${domain}. (
+                        0   ; serial
+                        1D  ; referesh
+                        1H  ; retry
+                        1W  ; expire
+                        3H )    ; minimum
+    @   IN  NS  ns1.${domain}.
+    @   IN  NS  ns2.${domain}.
+    ns1 IN  A   ${server}
+    ns2 IN  A   ${client}
+    ftp IN  A   ${alias}
 EOF
+    /bin/cat >/var/named/rvs.${domain} <<EOF
+    \$TTL 1D
+    @   IN  SOA ns1.${domain}.  dnsadmin.${domain}. (
+                        0   ; serial
+                        1D  ; refresh
+                        1H  ; retry
+                        1W  ; expire
+                        3H )    ; minimum
+    @   IN  NS  ns1.${domain}.
+    @   IN  NS  ns2.${domain}.
+    @   IN  NS  ftp.${domain}.
 
-    install -o root -g named -m 0640 /dev/null /var/named/rev.172.16.30.db
-    /bin/cat >/var/named/rev.172.16.30.db <<EOF
-\$TTL 86400
-@   IN SOA ns1.${DOMAIN}. admin.${DOMAIN}. (
-        ${SERIAL}
-        3600
-        900
-        1209600
-        86400
-)
-    IN NS ns1.${DOMAIN}.
-    IN NS ns2.${DOMAIN}.
-48  IN PTR srv.${DOMAIN}.
+    48.30   IN  PTR ns1.${domain}.
+    48.31   IN  PTR ns2.${domain}.
+    48.32   IN  PTR ftp.${domain}.
 EOF
+    chown root:named /var/named/fwd.${domain} /var/named/rvs.${domain}
+    
+    named-checkzone forward /var/named/fwd.${domain}
+    named-checkzone reverse /var/named/rvs.${domain}
 
-    install -o root -g named -m 0640 /dev/null /var/named/rev.172.16.32.db
-    /bin/cat >/var/named/rev.172.16.32.db <<EOF
-\$TTL 86400
-@   IN SOA ns1.${DOMAIN}. admin.${DOMAIN}. (
-        ${SERIAL}
-        3600
-        900
-        1209600
-        86400
-)
-    IN NS ns1.${DOMAIN}.
-    IN NS ns2.${DOMAIN}.
-48  IN PTR ns1.${DOMAIN}.
-48  IN PTR ftp.${DOMAIN}.
-EOF
-
-    restorecon -Rv /var/named >/dev/null
-
-    named-checkconf
-    named-checkzone "${DOMAIN}" /var/named/fwd.${DOMAIN}
-    named-checkzone "${REV_30_ZONE}" /var/named/rev.172.16.30.db
-    named-checkzone "${REV_32_ZONE}" /var/named/rev.172.16.32.db
+    /usr/sbin/named-checkconf -z /etc/named.conf
 else
     mkdir -p /var/named/slaves
-    chown named:named /var/named/slaves
-    restorecon -Rv /var/named >/dev/null
-    named-checkconf
+    chown root:named /var/named/slaves
+    
+    /usr/sbin/named-checkconf -z /etc/named.conf
 fi
 
 
-# firewall: allow server & client nets, block alias net
-for proto in tcp udp; do
-    iptables -C INPUT -p "${proto}" --dport 53 -s ${SERVER_NET} -j ACCEPT 2>/dev/null || \
-        iptables -I INPUT -p "${proto}" --dport 53 -s ${SERVER_NET} -j ACCEPT
-    iptables -C INPUT -p "${proto}" --dport 53 -s ${CLIENT_NET} -j ACCEPT 2>/dev/null || \
-        iptables -I INPUT -p "${proto}" --dport 53 -s ${CLIENT_NET} -j ACCEPT
-    iptables -C INPUT -p "${proto}" --dport 53 -s ${ALIAS_NET} -j REJECT 2>/dev/null || \
-        iptables -I INPUT -p "${proto}" --dport 53 -s ${ALIAS_NET} -j REJECT
-done
-service iptables save
+# firewall rules: allow client and server networks access to the dns (53) port and reject alias ip
+iptables -I INPUT -p udp --dport 53 -s ${net} -j ACCEPT
+iptables -I INPUT -p tcp --dport 53 -s ${net} -j ACCEPT
+
+# block dns queries from alias ip 
+iptables -I INPUT -p udp --dport 53 -s ${alias} -j REJECT
+iptables -I INPUT -p tcp --dport 53 -s ${alias} -j REJECT
 
 systemctl restart named
-echo "==================== configuration complete for ${ROLE} ===================="
+echo "==================== configuration complete for ${role} ===================="
 cat /etc/named.conf
 echo ""
 ss -tulpn | grep :53 || true
@@ -190,23 +217,33 @@ echo ""
 journalctl --no-pager -u named | tail -20
 echo ""
 
-if [[ "$ROLE" == "master" ]]; then
-    echo "testing master dns server:"
-    dig @127.0.0.1 ns1.${DOMAIN} +noall +answer
-    dig @127.0.0.1 ns2.${DOMAIN} +noall +answer
-    dig @127.0.0.1 ftp.${DOMAIN} +noall +answer
-    dig @127.0.0.1 -x ${PRIMARY_IP} +noall +answer
-    dig @127.0.0.1 -x ${ALIAS_IP} +noall +answer
-    dig @127.0.0.1 -x ${CLIENT_IP} +noall +answer
+if [[ "$role" == "master" ]]; then
+    echo "digging ns1 (${server})"
+    dig -x ${server}
+
+    echo "digging ns2 (${client})"
+    dig -x ${client}
+
+    echo "digging ftp (${alias})"
+    dig -x ${alias}
+
     echo ""
-    echo "slave setup: run this script on client (${CLIENT_IP}) with 'slave' role"
+    echo "master setup done"
+elif [[ "$role" == "slave" ]]; then
+    echo "digging ns1 (${server})"
+    dig -x ${server}
+
+    echo "digging ns2 (${client})"
+    dig -x ${client}
+
+    echo "digging ftp (${alias})"
+    dig -x ${alias}
+
+    echo ""
+    echo "slave setup done"
 else
-    echo "waiting for zone transfers..."
-    sleep 5
-    ls -lah /var/named/slaves/ || echo "no transfers yet"
-    echo ""
-    echo "testing slave dns server:"
-    dig @127.0.0.1 ns1.${DOMAIN} +noall +answer
-    dig @127.0.0.1 ftp.${DOMAIN} +noall +answer
-    dig @127.0.0.1 -x ${ALIAS_IP} +noall +answer
+    echo "error exiting script"
+    exit 1
 fi
+
+# END OF SCRIPT
