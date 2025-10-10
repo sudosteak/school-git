@@ -170,6 +170,12 @@ EOF
 48.31   IN  PTR ns2.${domain}.
 48.32   IN  PTR ftp.${domain}.
 EOF
+
+    cat >/etc/resolv.conf <<EOF
+search ${domain}, localhost 
+nameserver ${server}, 192.168.48.1
+EOF
+
     chown root:named /var/named/fwd.${domain} /var/named/rvs.${domain}
     
     named-checkzone forward /var/named/fwd.${domain} || { echo "WARNING: forward zone check failed"; }
