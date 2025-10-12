@@ -3,10 +3,19 @@
 CST8342 Midterm Quiz Script
 Randomly quizzes you on questions from the study guide.
 Includes answer key based on most likely correct answers.
+
+Usage:
+    python quiz_me.py [options]
+    
+Options:
+    -n, --num-questions N    Number of questions (default: 10)
+    -f, --no-feedback        Don't show correct answers immediately
+    -h, --help              Show this help message
 """
 
 import random
 import re
+import sys
 from pathlib import Path
 
 
@@ -52,10 +61,10 @@ def parse_questions(file_path):
     return questions
 
 
-def ask_question(q_data, show_answer=True):
+def ask_question(q_data, show_answer=True, question_num=1):
     """Ask a single question and return if answer was correct."""
     print(f"\n{'='*70}")
-    print(f"Question {q_data['number']}: {q_data['question']}")
+    print(f"Question {question_num}: {q_data['question']}")
     print(f"{'='*70}")
     
     for letter in ['A', 'B', 'C', 'D']:
@@ -89,6 +98,34 @@ def ask_question(q_data, show_answer=True):
 
 def main():
     """Main quiz function."""
+    # Parse command-line arguments
+    num_questions = None
+    show_answers = True
+    
+    i = 1
+    while i < len(sys.argv):
+        arg = sys.argv[i]
+        if arg in ['-h', '--help']:
+            print(__doc__)
+            return
+        elif arg in ['-n', '--num-questions']:
+            if i + 1 >= len(sys.argv):
+                print("Error: -n/--num-questions requires a number")
+                return
+            try:
+                num_questions = int(sys.argv[i + 1])
+                i += 1
+            except ValueError:
+                print(f"Error: Invalid number '{sys.argv[i + 1]}'")
+                return
+        elif arg in ['-f', '--no-feedback']:
+            show_answers = False
+        else:
+            print(f"Error: Unknown argument '{arg}'")
+            print("Use -h or --help for usage information")
+            return
+        i += 1
+    
     print("=" * 70)
     print("CST8342 MIDTERM QUIZ")
     print("=" * 70)
@@ -106,24 +143,31 @@ def main():
     questions = parse_questions(questions_file)
     print(f"Loaded {len(questions)} questions!")
     
-    # Ask how many questions
-    while True:
-        try:
-            num_questions = input(f"\nHow many questions? (1-{len(questions)}, default: 10): ").strip()
-            if not num_questions:
-                num_questions = 10
-            else:
-                num_questions = int(num_questions)
-            
-            if 1 <= num_questions <= len(questions):
-                break
-            print(f"Please enter a number between 1 and {len(questions)}")
-        except ValueError:
-            print("Please enter a valid number")
+    # Ask how many questions if not specified
+    if num_questions is None:
+        while True:
+            try:
+                user_input = input(f"\nHow many questions? (1-{len(questions)}, default: 10): ").strip()
+                if not user_input:
+                    num_questions = 10
+                else:
+                    num_questions = int(user_input)
+                
+                if 1 <= num_questions <= len(questions):
+                    break
+                print(f"Please enter a number between 1 and {len(questions)}")
+            except ValueError:
+                print("Please enter a valid number")
+    else:
+        # Validate command-line specified number
+        if not (1 <= num_questions <= len(questions)):
+            print(f"Error: Number of questions must be between 1 and {len(questions)}")
+            return
     
-    # Ask if they want instant feedback
-    feedback = input("\nShow correct answers immediately? (Y/n): ").strip().lower()
-    show_answers = feedback != 'n'
+    # Ask if they want instant feedback (if not specified via args)
+    if '--no-feedback' not in sys.argv and '-f' not in sys.argv:
+        feedback = input("\nShow correct answers immediately? (Y/n): ").strip().lower()
+        show_answers = feedback != 'n'
     
     # Randomly select questions
     selected = random.sample(questions, num_questions)
@@ -134,9 +178,10 @@ def main():
     results = []
     for i, q in enumerate(selected, 1):
         print(f"\n[Question {i} of {num_questions}]")
-        answer, is_correct = ask_question(q, show_answers)
+        answer, is_correct = ask_question(q, show_answers, question_num=i)
         if answer:
             results.append({
+                'seq_number': i,
                 'number': q['number'],
                 'question': q['question'],
                 'answer': answer,
@@ -160,7 +205,7 @@ def main():
             print("\n📋 Answer Review:")
             for r in results:
                 status = "✅" if r['correct'] else "❌"
-                print(f"{status} Q{r['number']}: You answered {r['answer']}, Correct answer: {r['correct_answer']}")
+                print(f"{status} Question {r['seq_number']}: You answered {r['answer']}, Correct answer: {r['correct_answer']}")
         
         # Performance feedback
         if percentage >= 90:
