@@ -69,6 +69,22 @@ print_info "Configuring network interface with alias..."
 read -p "Enter your hostonly network interface name [enp2s0]: " INTERFACE
 INTERFACE=${INTERFACE:-enp2s0}
 
+# Install net-tools if not already installed
+print_info "Installing net-tools package..."
+dnf install -y net-tools
+
+# Disable NetworkManager to prevent it from overwriting our configuration
+print_info "Disabling NetworkManager..."
+systemctl stop NetworkManager
+systemctl disable NetworkManager
+print_status "NetworkManager stopped and disabled"
+
+# Enable network service (traditional networking)
+print_info "Enabling network service..."
+systemctl enable network
+systemctl start network
+print_status "Traditional network service enabled"
+
 # Configure primary IP (172.16.30.MN)
 print_info "Configuring primary IP 172.16.30.$MN..."
 ifconfig "$INTERFACE" 172.16.30.$MN netmask 255.255.0.0
