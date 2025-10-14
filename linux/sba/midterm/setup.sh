@@ -55,8 +55,10 @@ print_status "SSH configured for password authentication"
 
 # 4. Get hostname and IP configuration
 print_info "Current hostname: $(hostname)"
-read -p "Enter your server hostname (e.g., pull0037-SRV): " HOSTNAME
-read -p "Enter your MN value: " MN
+read -p "Enter your server hostname [pull0037-SRV]: " HOSTNAME
+HOSTNAME=${HOSTNAME:-pull0037-SRV}
+read -p "Enter your MN value [48]: " MN
+MN=${MN:-48}
 
 # Set hostname
 hostnamectl set-hostname "$HOSTNAME"
@@ -64,7 +66,8 @@ print_status "Hostname set to: $HOSTNAME"
 
 # 5. Configure static IP and alias interface
 print_info "Configuring network interface with alias..."
-read -p "Enter your hostonly network interface name (e.g., ens192): " INTERFACE
+read -p "Enter your hostonly network interface name [enp2s0]: " INTERFACE
+INTERFACE=${INTERFACE:-enp2s0}
 
 # Get the connection name
 CONNECTION=$(nmcli -t -f NAME,DEVICE connection show | grep "$INTERFACE" | cut -d: -f1 | head -1)
@@ -153,7 +156,6 @@ echo ""
 echo "================================================"
 echo "Summary:"
 echo "- System updated"
-echo "- User 'lab' created with password 'test'"
 echo "- Hostname: $HOSTNAME"
 echo "- Primary IP: 172.16.30.$MN"
 echo "- Alias IP: 172.16.32.$MN"
