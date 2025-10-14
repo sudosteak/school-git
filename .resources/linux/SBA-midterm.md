@@ -49,7 +49,7 @@ Set up NC listening on port 55765. Allow access from the ALIAS and SERVER networ
 - Ncat: Connection from 172.16.32.MN → allowed
 - Client → Server connection should be refused.
 
-Document firewall rules using `firewall-cmd --list-all`.
+Document firewall rules using iptables.
 
 ### 6. DNS
 

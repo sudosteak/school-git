@@ -69,34 +69,42 @@ print_info "Configuring network interface with alias..."
 read -p "Enter your hostonly network interface name [enp2s0]: " INTERFACE
 INTERFACE=${INTERFACE:-enp2s0}
 
-# Get the connection name
-CONNECTION=$(nmcli -t -f NAME,DEVICE connection show | grep "$INTERFACE" | cut -d: -f1 | head -1)
-
-if [[ -z "$CONNECTION" ]]; then
-    print_error "No connection found for interface $INTERFACE"
-    exit 1
-fi
-
-print_info "Using connection: $CONNECTION"
-
 # Configure primary IP (172.16.30.MN)
 print_info "Configuring primary IP 172.16.30.$MN..."
-nmcli connection modify "$CONNECTION" ipv4.addresses "172.16.30.$MN/16"
-nmcli connection modify "$CONNECTION" ipv4.gateway "172.16.0.1"
-nmcli connection modify "$CONNECTION" ipv4.dns "172.16.0.1"
-nmcli connection modify "$CONNECTION" ipv4.method manual
+ifconfig "$INTERFACE" 172.16.30.$MN netmask 255.255.0.0
 
 # Configure alias IP (172.16.32.MN)
 print_info "Configuring alias IP 172.16.32.$MN..."
-nmcli connection modify "$CONNECTION" +ipv4.addresses "172.16.32.$MN/16"
+ifconfig "${INTERFACE}:0" 172.16.32.$MN netmask 255.255.0.0
 
-# Enable autoconnect to ensure interface comes up on boot
-nmcli connection modify "$CONNECTION" connection.autoconnect yes
+# Configure default gateway
+print_info "Configuring default gateway..."
+route add default gw 172.16.0.1
 
-# Restart the connection
-nmcli connection down "$CONNECTION" 2>/dev/null || true
-sleep 2
-nmcli connection up "$CONNECTION"
+# Configure DNS
+print_info "Configuring DNS..."
+cat > /etc/resolv.conf <<EOF
+search linux-nat
+nameserver 192.168.48.1
+nameserver 172.16.0.1
+EOF
+
+# Make network configuration persistent across reboots
+print_info "Creating persistent network configuration..."
+IFCFG_FILE="/etc/sysconfig/network-scripts/ifcfg-${INTERFACE}"
+cat > "$IFCFG_FILE" <<EOF
+TYPE=Ethernet
+BOOTPROTO=none
+NAME=$INTERFACE
+DEVICE=$INTERFACE
+ONBOOT=yes
+IPADDR=172.16.30.$MN
+IPADDR2=172.16.32.$MN
+NETMASK=255.255.0.0
+GATEWAY=172.16.0.1
+DNS1=172.16.0.1
+EOF
+
 print_status "Network configured with primary IP 172.16.30.$MN and alias 172.16.32.$MN"
 
 # 6. Configure sudo for wheel group
