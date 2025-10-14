@@ -93,7 +93,17 @@ sleep 2
 nmcli connection up "$CONNECTION"
 print_status "Network configured with primary IP 172.16.30.$MN and alias 172.16.32.$MN"
 
-# 6. Configure firewall with iptables
+# 6. Configure sudo for wheel group
+print_info "Configuring sudo for wheel group (passwordless)..."
+sed -i 's/^# %wheel\tALL=(ALL)\tNOPASSWD: ALL/%wheel\tALL=(ALL)\tNOPASSWD: ALL/' /etc/sudoers
+# Verify the change was successful
+if grep -q "^%wheel.*NOPASSWD: ALL" /etc/sudoers; then
+    print_status "Wheel group configured for passwordless sudo"
+else
+    print_error "Failed to configure wheel group sudo"
+fi
+
+# 7. Configure firewall with iptables
 print_info "Configuring firewall with iptables..."
 # Stop and mask firewalld
 systemctl stop firewalld 2>/dev/null || true
@@ -133,7 +143,7 @@ iptables -A INPUT -p tcp --dport 22 -j ACCEPT
 service iptables save
 print_status "Iptables configured and rules saved"
 
-# 7. Verify SSH access for lab user
+# 8. Verify SSH access for lab user
 print_info "Verifying SSH setup..."
 print_status "Setup complete!"
 echo ""
