@@ -32,27 +32,6 @@ fi
 print_info "Starting SBA Midterm Setup Script"
 echo "================================================"
 
-# Determine if this is a server or client setup
-echo "Select the type of system to configure:"
-echo "1) Server"
-echo "2) Client"
-read -p "Enter your choice (1 or 2): " SYSTEM_TYPE
-
-case $SYSTEM_TYPE in
-    1)
-        SYSTEM_TYPE="server"
-        print_info "Configuring as SERVER"
-        ;;
-    2)
-        SYSTEM_TYPE="client"
-        print_info "Configuring as CLIENT"
-        ;;
-    *)
-        print_error "Invalid choice. Exiting."
-        exit 1
-        ;;
-esac
-
 # 1. Update the system
 print_info "Running dnf update..."
 dnf update -y
@@ -86,21 +65,15 @@ print_status "SSH configured for password authentication"
 
 # 5. Get hostname and IP configuration
 print_info "Current hostname: $(hostname)"
-
-if [[ "$SYSTEM_TYPE" == "server" ]]; then
-    read -p "Enter your server hostname (e.g., pull0037-SRV): " HOSTNAME
-    read -p "Enter your MN value: " MN
-else
-    read -p "Enter your client hostname (e.g., pull0037-CLI): " HOSTNAME
-    read -p "Enter your MN value: " MN
-fi
+read -p "Enter your server hostname (e.g., pull0037-SRV): " HOSTNAME
+read -p "Enter your MN value: " MN
 
 # Set hostname
 hostnamectl set-hostname "$HOSTNAME"
 print_status "Hostname set to: $HOSTNAME"
 
 # 6. Configure static IP and alias interface
-print_info "Configuring network interface..."
+print_info "Configuring network interface with alias..."
 read -p "Enter your primary network interface name (e.g., ens192): " INTERFACE
 
 # Get the connection name
@@ -113,37 +86,22 @@ fi
 
 print_info "Using connection: $CONNECTION"
 
-if [[ "$SYSTEM_TYPE" == "server" ]]; then
-    # Configure primary IP (172.16.30.MN) for server
-    print_info "Configuring primary IP 172.16.30.$MN..."
-    nmcli connection modify "$CONNECTION" ipv4.addresses "172.16.30.$MN/16"
-    nmcli connection modify "$CONNECTION" ipv4.gateway "172.16.0.1"
-    nmcli connection modify "$CONNECTION" ipv4.dns "172.16.0.1"
-    nmcli connection modify "$CONNECTION" ipv4.method manual
+# Configure primary IP (172.16.30.MN)
+print_info "Configuring primary IP 172.16.30.$MN..."
+nmcli connection modify "$CONNECTION" ipv4.addresses "172.16.30.$MN/16"
+nmcli connection modify "$CONNECTION" ipv4.gateway "172.16.0.1"
+nmcli connection modify "$CONNECTION" ipv4.dns "172.16.0.1"
+nmcli connection modify "$CONNECTION" ipv4.method manual
 
-    # Configure alias IP (172.16.32.MN)
-    print_info "Configuring alias IP 172.16.32.$MN..."
-    nmcli connection modify "$CONNECTION" +ipv4.addresses "172.16.32.$MN/16"
+# Configure alias IP (172.16.32.MN)
+print_info "Configuring alias IP 172.16.32.$MN..."
+nmcli connection modify "$CONNECTION" +ipv4.addresses "172.16.32.$MN/16"
 
-    # Restart the connection
-    nmcli connection down "$CONNECTION" 2>/dev/null || true
-    sleep 2
-    nmcli connection up "$CONNECTION"
-    print_status "Network configured with primary IP 172.16.30.$MN and alias 172.16.32.$MN"
-else
-    # Configure client IP (172.16.31.MN) for client
-    print_info "Configuring client IP 172.16.31.$MN..."
-    nmcli connection modify "$CONNECTION" ipv4.addresses "172.16.31.$MN/16"
-    nmcli connection modify "$CONNECTION" ipv4.gateway "172.16.0.1"
-    nmcli connection modify "$CONNECTION" ipv4.dns "172.16.0.1"
-    nmcli connection modify "$CONNECTION" ipv4.method manual
-
-    # Restart the connection
-    nmcli connection down "$CONNECTION" 2>/dev/null || true
-    sleep 2
-    nmcli connection up "$CONNECTION"
-    print_status "Network configured with IP 172.16.31.$MN"
-fi
+# Restart the connection
+nmcli connection down "$CONNECTION" 2>/dev/null || true
+sleep 2
+nmcli connection up "$CONNECTION"
+print_status "Network configured with primary IP 172.16.30.$MN and alias 172.16.32.$MN"
 
 # 7. Configure firewall with iptables
 print_info "Configuring firewall with iptables..."
@@ -191,27 +149,14 @@ print_status "Setup complete!"
 echo ""
 echo "================================================"
 echo "Summary:"
-echo "- System Type: $SYSTEM_TYPE"
 echo "- System updated"
 echo "- User 'lab' created with password 'test'"
 echo "- Hostname: $HOSTNAME"
-
-if [[ "$SYSTEM_TYPE" == "server" ]]; then
-    echo "- Primary IP: 172.16.30.$MN"
-    echo "- Alias IP: 172.16.32.$MN"
-    echo ""
-    echo "Test SSH access with:"
-    echo "  ssh lab@172.16.30.$MN"
-else
-    echo "- Client IP: 172.16.31.$MN"
-    echo ""
-    echo "Test SSH to server with:"
-    echo "  ssh lab@172.16.30.XX"
-    echo ""
-    echo "Test connectivity:"
-    echo "  ping 172.16.30.XX"
-fi
-
+echo "- Primary IP: 172.16.30.$MN"
+echo "- Alias IP: 172.16.32.$MN"
+echo ""
+echo "Test SSH access with:"
+echo "  ssh lab@172.16.30.$MN"
 echo ""
 echo "Please reboot the system for all changes to take effect."
 read -p "Reboot now? (y/n): " REBOOT
