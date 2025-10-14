@@ -37,24 +37,14 @@ print_info "Running dnf update..."
 dnf update -y
 print_status "System updated"
 
-# 2. Create user 'lab' with password 'test'
-print_info "Creating user 'lab' with password 'test'..."
-if id "lab" &>/dev/null; then
-    print_info "User 'lab' already exists"
-else
-    useradd lab
-    echo "test" | passwd --stdin lab
-    print_status "User 'lab' created with password 'test'"
-fi
-
-# 3. Ensure SSH is installed and enabled
+# 2. Ensure SSH is installed and enabled
 print_info "Setting up SSH service..."
 dnf install -y openssh-server
 systemctl enable sshd
 systemctl start sshd
 print_status "SSH service enabled and started"
 
-# 4. Configure SSH to allow password authentication for lab user
+# 3. Configure SSH to allow password authentication for lab user
 print_info "Configuring SSH for password authentication..."
 sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
 if ! grep -q "^PasswordAuthentication yes" /etc/ssh/sshd_config; then
@@ -63,7 +53,7 @@ fi
 systemctl restart sshd
 print_status "SSH configured for password authentication"
 
-# 5. Get hostname and IP configuration
+# 4. Get hostname and IP configuration
 print_info "Current hostname: $(hostname)"
 read -p "Enter your server hostname (e.g., pull0037-SRV): " HOSTNAME
 read -p "Enter your MN value: " MN
@@ -72,7 +62,7 @@ read -p "Enter your MN value: " MN
 hostnamectl set-hostname "$HOSTNAME"
 print_status "Hostname set to: $HOSTNAME"
 
-# 6. Configure static IP and alias interface
+# 5. Configure static IP and alias interface
 print_info "Configuring network interface with alias..."
 read -p "Enter your primary network interface name (e.g., ens192): " INTERFACE
 
@@ -103,7 +93,7 @@ sleep 2
 nmcli connection up "$CONNECTION"
 print_status "Network configured with primary IP 172.16.30.$MN and alias 172.16.32.$MN"
 
-# 7. Configure firewall with iptables
+# 6. Configure firewall with iptables
 print_info "Configuring firewall with iptables..."
 # Stop and mask firewalld
 systemctl stop firewalld 2>/dev/null || true
@@ -143,7 +133,7 @@ iptables -A INPUT -p tcp --dport 22 -j ACCEPT
 service iptables save
 print_status "Iptables configured and rules saved"
 
-# 8. Verify SSH access for lab user
+# 7. Verify SSH access for lab user
 print_info "Verifying SSH setup..."
 print_status "Setup complete!"
 echo ""
