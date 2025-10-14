@@ -64,7 +64,7 @@ print_status "Hostname set to: $HOSTNAME"
 
 # 5. Configure static IP and alias interface
 print_info "Configuring network interface with alias..."
-read -p "Enter your primary network interface name (e.g., ens192): " INTERFACE
+read -p "Enter your hostonly network interface name (e.g., ens192): " INTERFACE
 
 # Get the connection name
 CONNECTION=$(nmcli -t -f NAME,DEVICE connection show | grep "$INTERFACE" | cut -d: -f1 | head -1)
@@ -86,6 +86,9 @@ nmcli connection modify "$CONNECTION" ipv4.method manual
 # Configure alias IP (172.16.32.MN)
 print_info "Configuring alias IP 172.16.32.$MN..."
 nmcli connection modify "$CONNECTION" +ipv4.addresses "172.16.32.$MN/16"
+
+# Enable autoconnect to ensure interface comes up on boot
+nmcli connection modify "$CONNECTION" connection.autoconnect yes
 
 # Restart the connection
 nmcli connection down "$CONNECTION" 2>/dev/null || true
