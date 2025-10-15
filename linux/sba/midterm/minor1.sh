@@ -40,9 +40,10 @@ echo "================================================"
 # Get MN value
 read -p "Enter your MN value [48]: " MN
 MN=${MN:-48}
+read -p "Enter port number to use [49876]: " PORT
+PORT=${PORT:-49876}
 
 # Define variables
-PORT=49876
 server="172.16.30.${MN}"
 client_net="172.16.31.0/24"
 server_net="172.16.30.0/24"

@@ -53,10 +53,28 @@ fi
 systemctl restart sshd
 print_status "SSH configured for password authentication"
 
+# 3.5. Create user for SSH access
+read -p "Enter username to create [lab]: " USERNAME
+USERNAME=${USERNAME:-lab}
+read -p "Enter password for user $USERNAME [test]: " USERPASS
+USERPASS=${USERPASS:-test}
+
+print_info "Creating user '$USERNAME'..."
+if ! id "$USERNAME" &>/dev/null; then
+    useradd "$USERNAME"
+    echo "$USERPASS" | passwd --stdin "$USERNAME"
+    print_status "User '$USERNAME' created with password '$USERPASS'"
+else
+    print_status "User '$USERNAME' already exists"
+    # Set password anyway to ensure it's correct
+    echo "$USERPASS" | passwd --stdin "$USERNAME"
+    print_status "Password for user '$USERNAME' set to '$USERPASS'"
+fi
+
 # 4. Get hostname and IP configuration
 print_info "Current hostname: $(hostname)"
-read -p "Enter your server hostname [pull0037-SRV]: " HOSTNAME
-HOSTNAME=${HOSTNAME:-pull0037-SRV}
+read -p "Enter your server hostname [pull0037-SRV.example48.lab]: " HOSTNAME
+HOSTNAME=${HOSTNAME:-pull0037-SRV.example48.lab}
 read -p "Enter your MN value [48]: " MN
 MN=${MN:-48}
 
@@ -159,9 +177,10 @@ echo "- System updated"
 echo "- Hostname: $HOSTNAME"
 echo "- Primary IP: 172.16.30.$MN"
 echo "- Alias IP: 172.16.32.$MN"
+echo "- User: $USERNAME (password: $USERPASS)"
 echo ""
 echo "Test SSH access with:"
-echo "  ssh lab@172.16.30.$MN"
+echo "  ssh $USERNAME@172.16.30.$MN"
 echo ""
 echo "Please reboot the system for all changes to take effect."
 read -p "Reboot now? (y/n): " REBOOT
