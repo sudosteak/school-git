@@ -37,9 +37,8 @@ fi
 print_info "Starting SSH Configuration for SBA Midterm"
 echo "================================================"
 
-# Get MN value
-read -p "Enter your MN value [48]: " MN
-MN=${MN:-48}
+# Magic number
+MN=48
 
 server="172.16.30.${MN}"
 print_info "Server IP: ${server}"
@@ -83,14 +82,23 @@ fi
 
 print_status "SSH configuration updated"
 
-# Ensure user 'lab' exists (should be created in setup.sh)
-if ! id lab &>/dev/null; then
-    print_info "Creating user 'lab'..."
-    useradd lab
-    echo "test" | passwd --stdin lab
-    print_status "User 'lab' created with password 'test'"
+# Get lab user configuration
+read -p "Enter password authentication username [lab]: " LAB_USER
+LAB_USER=${LAB_USER:-lab}
+read -p "Enter password for user $LAB_USER [test]: " LAB_PASS
+LAB_PASS=${LAB_PASS:-test}
+
+# Ensure user exists (may have been created in setup.sh)
+if ! id "$LAB_USER" &>/dev/null; then
+    print_info "Creating user '$LAB_USER'..."
+    useradd "$LAB_USER"
+    echo "$LAB_PASS" | passwd --stdin "$LAB_USER"
+    print_status "User '$LAB_USER' created with password '$LAB_PASS'"
 else
-    print_status "User 'lab' already exists"
+    print_status "User '$LAB_USER' already exists"
+    # Update password to ensure it matches
+    echo "$LAB_PASS" | passwd --stdin "$LAB_USER"
+    print_status "Password for user '$LAB_USER' set to '$LAB_PASS'"
 fi
 
 # Create user 'foo' for public key authentication
@@ -143,20 +151,13 @@ print_status "Private key also saved to /root/foo_private_key"
 # Configure firewall to allow SSH
 print_info "Configuring firewall for SSH..."
 
-# Check if firewalld or iptables is active
-if systemctl is-active --quiet firewalld; then
-    firewall-cmd --permanent --add-service=ssh
-    firewall-cmd --reload
-    print_status "Firewall configured (firewalld)"
-elif systemctl is-active --quiet iptables; then
-    # Ensure SSH is allowed in iptables
-    if ! iptables -C INPUT -p tcp --dport 22 -j ACCEPT 2>/dev/null; then
-        iptables -I INPUT -p tcp --dport 22 -j ACCEPT
-        service iptables save
-    fi
+# Ensure SSH is allowed in iptables (setup.sh should have already configured this)
+if ! iptables -C INPUT -p tcp --dport 22 -j ACCEPT 2>/dev/null; then
+    iptables -I INPUT -p tcp --dport 22 -j ACCEPT
+    service iptables save
     print_status "Firewall configured (iptables)"
 else
-    print_info "No active firewall detected"
+    print_status "SSH already allowed in firewall"
 fi
 
 # Enable and restart SSH service
@@ -184,10 +185,10 @@ echo "SSH Configuration Summary"
 echo "================================================"
 echo "Server IP: ${server}"
 echo ""
-echo "User 'lab' (Password Authentication):"
-echo "  Username: lab"
-echo "  Password: test"
-echo "  Command: ssh lab@${server}"
+echo "User '${LAB_USER}' (Password Authentication):"
+echo "  Username: ${LAB_USER}"
+echo "  Password: ${LAB_PASS}"
+echo "  Command: ssh ${LAB_USER}@${server}"
 echo ""
 echo "User 'foo' (PublicKey Authentication):"
 echo "  Username: foo"
@@ -203,7 +204,7 @@ print_status "SSH Configuration Complete!"
 echo "================================================"
 echo ""
 echo "Testing from this server (localhost):"
-echo "  1. Password auth: ssh lab@localhost"
+echo "  1. Password auth: ssh ${LAB_USER}@localhost"
 echo "  2. PublicKey auth: ssh -i /home/foo/.ssh/id_rsa foo@localhost"
 echo ""
 echo "Setup on client machine:"

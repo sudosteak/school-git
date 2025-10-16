@@ -35,9 +35,8 @@ fi
 print_info "Starting DNS Configuration for SBA Midterm"
 echo "================================================"
 
-# Get MN value
-read -p "Enter your MN value [48]: " MN
-MN=${MN:-48}
+# Magic number
+MN=48
 
 # Define variables
 domain="happy.lab"

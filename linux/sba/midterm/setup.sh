@@ -75,8 +75,9 @@ fi
 print_info "Current hostname: $(hostname)"
 read -p "Enter your server hostname [pull0037-SRV.example48.lab]: " HOSTNAME
 HOSTNAME=${HOSTNAME:-pull0037-SRV.example48.lab}
-read -p "Enter your MN value [48]: " MN
-MN=${MN:-48}
+
+# Magic number
+MN=48
 
 # Set hostname
 hostnamectl set-hostname "$HOSTNAME"

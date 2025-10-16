@@ -37,9 +37,9 @@ fi
 print_info "Starting Firewall/Netcat Configuration for SBA Midterm"
 echo "================================================"
 
-# Get MN value
-read -p "Enter your MN value [48]: " MN
-MN=${MN:-48}
+# Magic number
+MN=48
+
 read -p "Enter port number to use [49876]: " PORT
 PORT=${PORT:-49876}
 
