@@ -40,8 +40,8 @@ echo "================================================"
 # Magic number
 MN=48
 
-read -p "Enter port number to use [49876]: " PORT
-PORT=${PORT:-49876}
+read -p "Enter port number to use [49955]: " PORT
+PORT=${PORT:-49955}
 
 # Define variables
 server="172.16.30.${MN}"

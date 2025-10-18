@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # major dns script for midterm sba refer to school-git/.resources/linux/SBA-midterm.md lines 54 to 60
-# Configure DNS: Set up ns1.happy.lab with forward zone on server (172.16.30.MN)
+# Configure DNS: Set up dns1.green.lab with forward zone on server (172.16.30.MN)
 # Allow queries from client and server networks
-# Verify: dig ns1.happy.lab
+# Verify: dig dns1.green.lab
 
 set -euo pipefail
 
@@ -39,7 +39,7 @@ echo "================================================"
 MN=48
 
 # Define variables
-domain="happy.lab"
+domain="green.lab"
 server="172.16.30.${MN}"
 client="172.16.31.${MN}"
 alias="172.16.32.${MN}"
@@ -134,14 +134,14 @@ print_status "Created /etc/named.conf"
 print_info "Creating forward zone file..."
 cat >/var/named/fwd.${domain} <<EOF
 \$TTL 86400
-@   IN  SOA ns1.${domain}. dnsadmin.${domain}. (
+@   IN  SOA dns1.${domain}. dnsadmin.${domain}. (
                     $(date +%Y%m%d01) ; serial
                     1D      ; refresh
                     1H      ; retry
                     1W      ; expire
                     3H )    ; minimum
-@   IN  NS  ns1.${domain}.
-ns1 IN  A   ${server}
+@   IN  NS  dns1.${domain}.
+dns1 IN  A   ${server}
 EOF
 
 print_status "Created forward zone file"
@@ -150,15 +150,15 @@ print_status "Created forward zone file"
 print_info "Creating reverse zone file..."
 cat >/var/named/rvs.${domain} <<EOF
 \$TTL 1D
-@   IN  SOA ns1.${domain}. dnsadmin.${domain}. (
+@   IN  SOA dns1.${domain}. dnsadmin.${domain}. (
                     $(date +%Y%m%d01) ; serial
                     1D      ; refresh
                     1H      ; retry
                     1W      ; expire
                     3H )    ; minimum
-@   IN  NS  ns1.${domain}.
+@   IN  NS  dns1.${domain}.
 
-${MN}.30   IN  PTR ns1.${domain}.
+${MN}.30   IN  PTR dns1.${domain}.
 EOF
 
 print_status "Created reverse zone file"
@@ -247,7 +247,7 @@ echo "================================================"
 echo "DNS Configuration Summary"
 echo "================================================"
 echo "Domain: ${domain}"
-echo "Name Server: ns1.${domain} (${server})"
+echo "Name Server: dns1.${domain} (${server})"
 echo "Allowed query sources:"
 echo "  - Client network: ${client_net}"
 echo "  - Server network: ${server_net}"
@@ -269,16 +269,16 @@ echo "================================================"
 
 sleep 2  # Give DNS a moment to fully start
 
-print_info "Testing forward lookup for ns1.${domain}..."
-if dig @${server} ns1.${domain} +short | grep -q "${server}"; then
-    print_status "Forward lookup successful: ns1.${domain} → ${server}"
+print_info "Testing forward lookup for dns1.${domain}..."
+if dig @${server} dns1.${domain} +short | grep -q "${server}"; then
+    print_status "Forward lookup successful: dns1.${domain} → ${server}"
 else
     print_error "Forward lookup failed"
 fi
 
 print_info "Testing reverse lookup for ${server}..."
-if dig @${server} -x ${server} +short | grep -q "ns1.${domain}"; then
-    print_status "Reverse lookup successful: ${server} → ns1.${domain}"
+if dig @${server} -x ${server} +short | grep -q "dns1.${domain}"; then
+    print_status "Reverse lookup successful: ${server} → dns1.${domain}"
 else
     print_error "Reverse lookup failed"
 fi
@@ -289,7 +289,7 @@ print_status "DNS Configuration Complete!"
 echo "================================================"
 echo ""
 echo "Verification commands:"
-echo "  From server: dig ns1.${domain}"
+echo "  From server: dig dns1.${domain}"
 echo "  From server: dig -x ${server}"
-echo "  From client: dig @${server} ns1.${domain}"
+echo "  From client: dig @${server} dns1.${domain}"
 echo ""
