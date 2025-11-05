@@ -10,6 +10,7 @@ fi
 # determine server role
 
 domain="example48.lab"
+domain2="site48.lab"
 server="172.16.30.48"
 alias="172.16.32.48"
 client="172.16.31.48"
@@ -89,6 +90,14 @@ zone "${rev}" IN {
     allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
 };
 
+// master for forward zone ${domain2}
+zone "${domain2}" IN {
+    type master;
+    file "fwd.${domain2}";
+    allow-update { none; };
+    allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
+};
+
 include "/etc/named.rfc1912.zones";
 include "/etc/named.root.key";
 EOF
@@ -136,6 +145,12 @@ zone "${rev}" IN {
     file "slaves/rvs.${domain}";
     masters { ${server}; };
 };
+// slave for forward zone ${domain2}
+zone "${domain2}" IN {
+    type slave;
+    file "slaves/fwd.${domain2}";
+    masters { ${server}; };
+};
 include "/etc/named.rfc1912.zones";
 include "/etc/named.root.key";
 EOF
@@ -154,9 +169,23 @@ if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
 @   IN  NS  ns1.${domain}.
 @   IN  NS  ns2.${domain}.
 @   IN  NS  ftp.${domain}.
-ns1 IN  A   ${server}
-ns2 IN  A   ${client}
-ftp IN  A   ${alias}
+ns1         IN  A   ${server}
+ns2         IN  A   ${client}
+ftp         IN  A   ${alias}
+www         IN  A   ${server}
+secure      IN  A   ${server}
+EOF
+
+    cat >/var/named/fwd.${domain2} <<EOF
+\$TTL 86400
+@   IN  SOA ns1.${domain2}.  dnsadmin.${domain2}. (
+                    0       ; serial
+                    1D      ; refresh
+                    1H      ; retry
+                    1W      ; expire
+                    3H )    ; minimum
+@   IN  NS  ns1.${domain}.
+www IN  A   ${server}
 EOF
 
     cat >/var/named/rvs.${domain} <<EOF
@@ -171,6 +200,9 @@ EOF
 @   IN  NS  ns2.${domain}.
 
 48.30   IN  PTR ns1.${domain}.
+48.30   IN  PTR www.${domain}.
+48.30   IN  PTR secure.${domain}.
+48.30   IN  PTR www.${domain2}.
 48.31   IN  PTR ns2.${domain}.
 48.32   IN  PTR ftp.${domain}.
 EOF
@@ -180,9 +212,10 @@ search localhost $domain
 nameserver $server
 EOF
 
-    chown root:named /var/named/fwd.${domain} /var/named/rvs.${domain}
+    chown root:named /var/named/fwd.${domain} /var/named/rvs.${domain} /var/named/fwd.${domain2}
 
     named-checkzone forward /var/named/fwd.${domain} || { echo "WARNING: forward zone check failed"; }
+    named-checkzone ${domain2} /var/named/fwd.${domain2} || { echo "WARNING: ${domain2} zone check failed"; }
     named-checkzone reverse /var/named/rvs.${domain} || { echo "WARNING: reverse zone check failed"; }
 
     /usr/sbin/named-checkconf -z /etc/named.conf || { echo "ERROR: named.conf validation failed"; exit 1; }
