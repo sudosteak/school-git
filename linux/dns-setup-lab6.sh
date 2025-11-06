@@ -95,7 +95,7 @@ zone "${domain2}" IN {
     type master;
     file "fwd.${domain2}";
     allow-update { none; };
-    allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
+    //allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
 };
 
 include "/etc/named.rfc1912.zones";
@@ -168,23 +168,25 @@ if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
                     3H )    ; minimum
 @   IN  NS  ns1.${domain}.
 @   IN  NS  ns2.${domain}.
-@   IN  NS  ftp.${domain}.
+
 ns1         IN  A   ${server}
 ns2         IN  A   ${client}
 ftp         IN  A   ${alias}
+
 www         IN  A   ${server}
-secure      IN  A   ${server}
+secure      IN  A   ${alias}
 EOF
 
     cat >/var/named/fwd.${domain2} <<EOF
 \$TTL 86400
 @   IN  SOA ns1.${domain2}.  dnsadmin.${domain2}. (
-                    0       ; serial
+                    20191120; serial
                     1D      ; refresh
                     1H      ; retry
                     1W      ; expire
                     3H )    ; minimum
-@   IN  NS  ns1.${domain}.
+@   IN  NS  ns1.${domain2}.
+ns1 IN  A   ${server}
 www IN  A   ${server}
 EOF
 
