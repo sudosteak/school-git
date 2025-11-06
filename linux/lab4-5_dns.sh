@@ -45,7 +45,7 @@ options {
     recursing-file "/var/named/data/named.recursing";
     allow-query { localhost; ${net}; };
     allow-recursion { ${net}; };
-    //allow-transfer { localhost; ${client}; }; // list of slaves allowed to transfer zone
+    allow-transfer { localhost; ${client}; }; // list of slaves allowed to transfer zone
 
     recursion yes;
 
