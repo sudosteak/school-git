@@ -93,6 +93,7 @@ include "/etc/named.rfc1912.zones";
 include "/etc/named.root.key";
 EOF
 else
+    rm -f /var/named/slaves/* || true
     cat >/etc/named.conf <<EOF
 options {
     listen-on port 53 { 127.0.0.1; ${client}; };
