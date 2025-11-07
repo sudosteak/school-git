@@ -19,13 +19,10 @@ if [[ "$(hostname -f)" != "$servername" ]]; then
     echo "testing httpd on client..."
     echo "=============================== www.${example_domain} ================================"
     dig www.${example_domain}
-    curl www.${example_domain}
     echo "=============================== www.${site_domain} ================================"
     dig www.${site_domain}
-    curl www.${site_domain}
     echo "=============================== secure.${example_domain} ================================"
     dig secure.${example_domain}
-    curl -k https://secure.${example_domain}
     exit 1
 fi
 
