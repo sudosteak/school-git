@@ -95,7 +95,6 @@ zone "${domain2}" IN {
     type master;
     file "fwd.${domain2}";
     allow-update { none; };
-    allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
 };
 
 include "/etc/named.rfc1912.zones";
@@ -149,7 +148,7 @@ zone "${rev}" IN {
 zone "${domain2}" IN {
     type slave;
     file "slaves/fwd.${domain2}";
-    masters { ${server}; };
+    masters { ${alias}; };
 };
 include "/etc/named.rfc1912.zones";
 include "/etc/named.root.key";
