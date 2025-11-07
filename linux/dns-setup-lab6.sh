@@ -270,6 +270,34 @@ if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
     echo ""
 fi
 
+echo "==================== dig for $server, $client and $alias ===================="
+echo ""
+if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
+    echo "digging ns1 (${server})"
+    dig -x ${server}
+
+    echo "digging ns2 (${client})"
+    dig -x ${client}
+
+    echo "digging ftp (${alias})"
+    dig -x ${alias}
+
+    echo ""
+    echo "master setup done"
+else
+    echo "digging ns1 (${server})"
+    dig -x ${server}
+
+    echo "digging ns2 (${client})"
+    dig -x ${client}
+
+    echo "digging ftp (${alias})"
+    dig -x ${alias}
+
+    echo ""
+    echo "slave setup done"
+fi
+
 # END OF SCRIPT
 # ask user if they want to run httpd.sh
 read -p "Do you want to run httpd.sh? (y/n) " answer
