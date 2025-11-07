@@ -65,7 +65,10 @@ chmod 755 /etc/httpd/tls/cert
 
 # make certificate
 yum install -y mod_ssl
-openssl req -x509 -newkey rsa -days 120 -nodes -keyout /etc/httpd/tls/key/example48.key -out /etc/httpd/tls/cert/example48.cert
+openssl req -x509 -newkey rsa -days 120 -nodes \
+    -keyout /etc/httpd/tls/key/example48.key \
+    -out /etc/httpd/tls/cert/example48.cert \
+    -subj "/O=CST8246/OU=example48.lab/CN=secure.example48.lab"
 chmod 600 /etc/httpd/tls/key/example48.key
 chmod 644 /etc/httpd/tls/cert/example48.cert
 
