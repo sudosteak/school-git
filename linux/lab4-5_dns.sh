@@ -186,6 +186,17 @@ EOF
     named-checkzone reverse /var/named/rvs.${domain} || { echo "WARNING: reverse zone check failed"; }
 
     /usr/sbin/named-checkconf -z /etc/named.conf || { echo "ERROR: named.conf validation failed"; exit 1; }
+    
+    # firewall rules: allow client and server networks access to the dns (53) port and reject alias ip
+    iptables -I INPUT -p udp --dport 53 -s "172.16.30.0/24" -j ACCEPT || true
+    iptables -I INPUT -p tcp --dport 53 -s "172.16.31.0/24" -j ACCEPT || true
+
+    # block dns queries from alias ip 
+    iptables -I INPUT -p udp --dport 53 -s "172.16.32.0/24" -j REJECT || true
+    iptables -I INPUT -p tcp --dport 53 -s "172.16.32.0/24" -j REJECT || true
+
+    # Save iptables rules so they persist after reboot
+    service iptables save || echo "WARNING: could not save iptables rules"
 else
     cat >/etc/resolv.conf <<EOF
 search localhost $domain
@@ -208,18 +219,6 @@ EOF
         echo "warning: reverse zone not transferred yet"
     fi
 fi
-
-
-# firewall rules: allow client and server networks access to the dns (53) port and reject alias ip
-iptables -I INPUT -p udp --dport 53 -s "172.16.30.0/24" -j ACCEPT || true
-iptables -I INPUT -p tcp --dport 53 -s "172.16.31.0/24" -j ACCEPT || true
-
-# block dns queries from alias ip 
-iptables -I INPUT -p udp --dport 53 -s "172.16.32.0/24" -j REJECT || true
-iptables -I INPUT -p tcp --dport 53 -s "172.16.32.0/24" -j REJECT || true
-
-# Save iptables rules so they persist after reboot
-service iptables save || echo "WARNING: could not save iptables rules"
 
 systemctl restart named || { echo "ERROR: named failed to restart"; journalctl -xeu named; exit 1; }
 echo ""
