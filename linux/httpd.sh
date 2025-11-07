@@ -143,6 +143,9 @@ iptables -A INPUT -p tcp -s 172.16.30.0/24 --dport 443 -j REJECT
 # Reject alias network access on port 80 only
 iptables -A INPUT -p tcp -s 172.16.32.0/24 --dport 80 -j REJECT
 
+# Save iptables rules so they persist after reboot
+service iptables save || echo "WARNING: could not save iptables rules"
+
 echo "iptables rules configured successfully"
 
 systemctl restart httpd
