@@ -12,7 +12,7 @@ site_domain="site48.lab"
 server="172.16.30.48"
 alias="172.16.32.48"
 client="172.16.31.48"
-servername="pull0037-srv.${example_domain}"
+servername="pull0037-SRV.${example_domain}"
 
 # check if running on correct server
 if [[ "$(hostname -f)" != "$servername" ]]; then
