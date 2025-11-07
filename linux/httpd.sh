@@ -33,6 +33,8 @@ fi
 setenforce 0 || true
 sed -i 's/^SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config || true
 
+systemctl restart NetworkManager
+
 # install httpd if not installed
 if ! rpm -q httpd >/dev/null 2>&1; then
     echo "installing httpd..."
