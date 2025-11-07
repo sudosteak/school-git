@@ -51,11 +51,12 @@ if ! grep -q "^ServerAdmin root@${example_domain}" /etc/httpd/conf/httpd.conf; t
 fi
 
 # make the directories for the lab
-mkdir -p /var/www/vhosts 2>/dev/null
-mkdir -p /var/www/html/www.${example_domain}/{html,logs}
-mkdir -p /var/www/html/secure.${example_domain}/{html,logs}
-mkdir -p /var/www/html/www.${site_domain}/{html,logs}
+rm -rf /var/www/vhosts 2>/dev/null || true
+mkdir -p /var/www/vhosts/www.${example_domain}/{html,logs}
+mkdir -p /var/www/vhosts/secure.${example_domain}/{html,logs}
+mkdir -p /var/www/vhosts/www.${site_domain}/{html,logs}
 
+rm -rf /etc/httpd/tls 2>/dev/null || true
 mkdir /etc/httpd/tls 2>/dev/null || true
 mkdir /etc/httpd/tls/key 2>/dev/null || true
 mkdir /etc/httpd/tls/cert 2>/dev/null || true
