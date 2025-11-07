@@ -103,7 +103,7 @@ options {
     memstatistics-file "/var/named/data/named_mem_stats.txt";
     secroots-file "/var/named/data/named.secroots";
     recursing-file "/var/named/data/named.recursing";
-    allow-query { localhost; ${net}; };
+    allow-query { localhost; 172.16.31.0/24; };
     allow-transfer { none; };
     recursion yes;
     dnssec-enable yes;
@@ -189,7 +189,7 @@ EOF
 else
     cat >/etc/resolv.conf <<EOF
 search localhost $domain
-nameserver $server
+nameserver $client
 EOF
 
     mkdir -p /var/named/slaves
