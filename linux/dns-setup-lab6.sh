@@ -46,7 +46,7 @@ options {
     recursing-file "/var/named/data/named.recursing";
     allow-query { localhost; ${net}; };
     allow-recursion { ${net}; };
-    //allow-transfer { localhost; ${client}; }; // list of slaves allowed to transfer zone
+    allow-transfer { localhost; ${client}; }; // list of slaves allowed to transfer zone
 
     recursion yes;
 
@@ -95,7 +95,7 @@ zone "${domain2}" IN {
     type master;
     file "fwd.${domain2}";
     allow-update { none; };
-    //allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
+    allow-transfer { ${client}; }; // list of slaves allowed to transfer zone
 };
 
 include "/etc/named.rfc1912.zones";
