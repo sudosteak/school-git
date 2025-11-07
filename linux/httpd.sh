@@ -132,9 +132,9 @@ echo "Configuring iptables rules..."
 # Flush existing rules (optional - comment out if you want to preserve existing rules)
 # iptables -F INPUT
 
-# Allow client access to all HTTP ports (80 and 443)
-iptables -A INPUT -p tcp -s ${client} --dport 80 -j ACCEPT
-iptables -A INPUT -p tcp -s ${client} --dport 443 -j ACCEPT
+# Allow client network access to all HTTP ports (80 and 443)
+iptables -A INPUT -p tcp -s 172.16.31.0/24 --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp -s 172.16.31.0/24 --dport 443 -j ACCEPT
 
 # Reject server network access to all HTTP ports (80 and 443)
 iptables -A INPUT -p tcp -s 172.16.30.0/24 --dport 80 -j REJECT

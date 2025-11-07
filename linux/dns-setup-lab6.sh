@@ -244,6 +244,9 @@ EOF
     fi
 fi
 
+# flush iptables rules
+iptables -F || true
+iptables -X || true
 
 # firewall rules: allow client and server networks access to the dns (53) port and reject alias ip
 iptables -I INPUT -p udp --dport 53 -s "172.16.30.0/24" -j ACCEPT || true
