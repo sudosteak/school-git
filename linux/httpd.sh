@@ -16,13 +16,19 @@ servername="pull0037-SRV.${example_domain}"
 
 # check if running on correct server
 if [[ "$(hostname -f)" != "$servername" ]]; then
-    echo "testing the configuration"
+    echo "testing httpd on client..."
+    echo "=============================== www.${example_domain} ================================"
+    dig www.${example_domain}
+    curl www.${example_domain}
+    echo "=============================== www.${site_domain} ================================"
+    dig www.${site_domain}
+    curl www.${site_domain}
+    echo "=============================== secure.${example_domain} ================================"
+    dig secure.${example_domain}
+    curl -k https://secure.${example_domain}
     exit 1
 fi
 
-# testing shit
-echo "test"
-exit 0
 # disable SELinux
 setenforce 0 || true
 sed -i 's/^SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config || true
@@ -158,3 +164,11 @@ service iptables save || echo "WARNING: could not save iptables rules"
 echo "iptables rules configured successfully"
 
 systemctl restart httpd
+
+
+echo ""
+echo ""
+echo "testing configuration for ${HOSTNAME}..."
+echo "firewall rules:"
+iptables -L INPUT -v -n | grep tcp | grep dpt:80\|grep dpt:443 || true
+echo ""
