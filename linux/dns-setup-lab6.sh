@@ -297,3 +297,8 @@ else
 fi
 
 # END OF SCRIPT
+# ask user if they want to run httpd.sh
+read -p "Do you want to run httpd.sh? (y/n) " answer
+if [[ "$answer" == [Yy] ]]; then
+    $HOME/school-git/linux/httpd.sh
+fi
