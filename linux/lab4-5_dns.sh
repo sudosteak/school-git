@@ -43,8 +43,8 @@ options {
     memstatistics-file "/var/named/data/named_mem_stats.txt";
     secroots-file "/var/named/data/named.secroots";
     recursing-file "/var/named/data/named.recursing";
-    allow-query { localhost; ${net}; };
-    allow-recursion { ${net}; };
+    allow-query { localhost; 172.16.0.0/16; };
+    allow-recursion { 172.16.0.0/16; };
     allow-transfer { localhost; ${client}; }; // list of slaves allowed to transfer zone
 
     recursion yes;
@@ -252,13 +252,13 @@ if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
     echo "master setup done"
 else
     echo "digging ns1 (${server})"
-    dig -x ${domain}
+    dig -x ${server}
 
     echo "digging ns2 (${client})"
-    dig -x ${domain}
+    dig -x ${client}
 
     echo "digging ftp (${alias})"
-    dig -x ${domain}
+    dig -x ${alias}
 
     echo ""
     echo "slave setup done"

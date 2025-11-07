@@ -287,13 +287,13 @@ if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
     echo "master setup done"
 else
     echo "digging ns1 (${server})"
-    dig -x ${domain}
+    dig -x ${server}
 
     echo "digging ns2 (${client})"
-    dig -x ${domain}
+    dig -x ${client}
 
     echo "digging ftp (${alias})"
-    dig -x ${domain}
+    dig -x ${alias}
 
     echo ""
     echo "slave setup done"
