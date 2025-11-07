@@ -170,5 +170,5 @@ echo ""
 echo ""
 echo "testing configuration for ${HOSTNAME}..."
 echo "firewall rules:"
-iptables -L INPUT -v -n | grep tcp | grep dpt:80\|grep dpt:443 || true
+iptables -L 
 echo ""
