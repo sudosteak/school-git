@@ -222,13 +222,19 @@ fi
 
 systemctl restart named || { echo "ERROR: named failed to restart"; journalctl -xeu named; exit 1; }
 echo ""
+# check if script is run under server then print iptables config 
 echo "==================== configuration complete for ${HOSTNAME} ===================="
 echo ""
-netstat -tulpn | grep :53 || true
-echo ""
-iptables -L INPUT -n --line-numbers 
-echo ""
-echo ""
+
+if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
+    echo ""
+    netstat -tulpn | grep :53 || true
+    echo ""
+    iptables -L INPUT -n --line-numbers 
+    echo ""
+    echo ""
+fi
+
 echo "==================== dig for $server, $client and $alias ===================="
 echo ""
 if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
