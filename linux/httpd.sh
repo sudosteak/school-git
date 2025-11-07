@@ -47,6 +47,11 @@ if ! rpm -q openssl >/dev/null 2>&1; then
     dnf install -y openssl
 fi
 
+cat > /etc/resolv.conf <<EOF
+search localhost ${example_domain}
+nameserver ${server}
+EOF
+
 systemctl enable --now httpd
 
 # create backup of httpd.conf
