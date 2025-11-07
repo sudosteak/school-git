@@ -201,6 +201,7 @@ else
     cat >/etc/resolv.conf <<EOF
 search localhost $domain
 nameserver $client
+nameserver $server
 EOF
 
     mkdir -p /var/named/slaves
@@ -251,13 +252,13 @@ if [[ "$HOSTNAME" == "pull0037-SRV.example48.lab" ]]; then
     echo "master setup done"
 else
     echo "digging ns1 (${server})"
-    dig -x ${server}
+    dig -x ${domain}
 
     echo "digging ns2 (${client})"
-    dig -x ${client}
+    dig -x ${domain}
 
     echo "digging ftp (${alias})"
-    dig -x ${alias}
+    dig -x ${domain}
 
     echo ""
     echo "slave setup done"
