@@ -21,6 +21,7 @@ if [[ "$(hostname -f)" != "$servername" ]]; then
 fi
 
 # testing shit
+echo "test"
 exit 0
 # disable SELinux
 setenforce 0 || true
