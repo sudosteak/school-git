@@ -6,12 +6,12 @@
 # Replace {USERNAME} with your username
 # Replace {U} with your U number
 
-output_file: w11-ospf-{USERNAME}.txt
+output_file: w11-ospf-pull0037.txt
 
 devices:
   - device_info:
       device_type: cisco_xe
-      ip: 198.18.{U}.17        # RA
+      ip: 198.18.162.17        # RA
       username: cisco
       password: cisco
     commands:
@@ -34,7 +34,7 @@ devices:
 
   - device_info:
       device_type: cisco_xe
-      ip: 198.18.{U}.22        # RB
+      ip: 198.18.162.22        # RB
       username: cisco
       password: cisco
     commands:
