@@ -1,0 +1,189 @@
+
+!
+! Last configuration change at 18:22:49 UTC Sat Oct 4 2025
+!
+version 16.12
+service timestamps debug datetime msec
+service timestamps log datetime msec
+platform qfp utilization monitor load 80
+platform punt-keepalive disable-kernel-core
+platform hardware throughput level 300000
+!
+hostname pull0037-EDGE
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition Mgmt-intf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+enable secret 9 $9$Fwi.u0SC.EyR7.$tOV3fIOCEvwHnOqJC9edAYAqhZrKKSN1JEEFbE0zBlA
+!
+no aaa new-model
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name cnap.cst
+!
+!
+!
+login on-success log
+ipv6 unicast-routing
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+! 
+! 
+! 
+! 
+!
+vtp mode transparent
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+no license feature hseck9
+license udi pid ISR4331/K9 sn FLM2332032U
+license boot suite FoundationSuiteK9
+license boot suite AdvUCSuiteK9
+memory free low-watermark processor 67065
+!
+diagnostic bootup level minimal
+!
+spanning-tree extend system-id
+!
+username cisco privilege 15 secret 9 $9$gkDn3nhCJ7wcYk$7GKhRVmORg4wsKZIfykaKyvZCeFP06xedml8B0D9iSE
+!
+redundancy
+ mode none
+!
+!
+!
+!
+!
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+! 
+! 
+!
+!
+interface Loopback130
+ ip address 198.18.162.130 255.255.255.255
+!
+interface GigabitEthernet0/0/0
+ ip address 203.0.113.162 255.255.255.0
+ negotiation auto
+!
+interface GigabitEthernet0/0/1
+ ip address 198.18.162.1 255.255.255.252
+ ip ospf 162 area 0
+ negotiation auto
+!
+interface GigabitEthernet0/0/2
+ ip address 198.18.162.33 255.255.255.240
+ ip access-group PROTECT-VM out
+ ip ospf 162 area 0
+ negotiation auto
+!
+interface GigabitEthernet0
+ vrf forwarding Mgmt-intf
+ no ip address
+ negotiation auto
+!
+router ospf 162
+ router-id 162.0.0.0
+ passive-interface GigabitEthernet0/0/2
+ default-information originate
+!
+ip forward-protocol nd
+no ip http server
+ip http secure-server
+ip route 0.0.0.0 0.0.0.0 GigabitEthernet0/0/0 203.0.113.254
+ip ssh version 2
+!
+!
+ip access-list standard PROTECT-VM
+ 10 permit 198.18.162.128 0.0.0.63 log
+ 20 deny   any
+!
+!
+!
+!
+!
+!
+!
+control-plane
+!
+!
+mgcp behavior rsip-range tgcp-only
+mgcp behavior comedia-role none
+mgcp behavior comedia-check-media-src disable
+mgcp behavior comedia-sdp-force disable
+!
+mgcp profile default
+!
+!
+!
+!
+!
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+ stopbits 1
+line aux 0
+ stopbits 1
+line vty 0 4
+ login local
+ transport input telnet ssh
+!
+!
+!
+!
+!
+!
+end

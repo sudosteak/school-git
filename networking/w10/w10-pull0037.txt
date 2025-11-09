@@ -1,0 +1,89 @@
+=== C01 - Policy #1 - PROTECT-VM Verification ===
+# ping 198.18.162.46						!-- FAIL
+pull0037-CORE#ping 198.18.162.46
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 198.18.162.46, timeout is 2 seconds:
+U.U.U
+Success rate is 0 percent (0/5)
+# ping 198.18.162.46 source 198.18.162.190	!-- PASS
+pull0037-CORE#ping 198.18.162.46 source 198.18.162.190
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 198.18.162.46, timeout is 2 seconds:
+Packet sent with a source address of 198.18.162.190
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/3 ms
+# show ip access-lists PROTECT-VM
+pull0037-EDGE#show ip access-lists PROTECT-VM
+Standard IP access list PROTECT-VM
+    10 permit 198.18.162.128, wildcard bits 0.0.0.63 log (21 matches)
+    20 deny   any (10 matches)
+# show ip interface g0/0/2 | inc PROTECT-VM
+pull0037-EDGE#show ip interface g0/0/2 | inc PROTECT-VM
+  Outgoing access list is PROTECT-VM
+# show logging | inc PROTECT-VM
+pull0037-EDGE#show logging | inc PROTECT-VM
+*Oct  4 18:18:36.102: %FMANFP-6-IPACCESSLOGDP: R0/0: fman_fp_image: list PROTECT-VM permitted icmp 198.18.162.129 -> 198.18.162.46 (8/0), 1 packet
+*Oct  4 18:21:38.601: %FMANFP-6-IPACCESSLOGDP: R0/0: fman_fp_image: list PROTECT-VM permitted icmp 198.18.162.190 -> 198.18.162.46 (8/0), 1 packet
+*Oct  4 18:23:59.182: %FMANFP-6-IPACCESSLOGDP: R0/0: fman_fp_image: list PROTECT-VM permitted icmp 198.18.162.129 -> 198.18.162.46 (8/0), 10 packets
+*Oct  4 18:26:59.196: %FMANFP-6-IPACCESSLOGDP: R0/0: fman_fp_image: list PROTECT-VM permitted icmp 198.18.162.190 -> 198.18.162.46 (8/0), 4 packets
+!-- PROTECT-VM is applied outbound on Gi0/0/2 and both ACEs have hits as expected.
+=== C02 - Policy #2 - PROTECT-PC Verification ===
+# ping 198.18.162.190
+C:\Users\Student>ping 198.18.162.190
+
+Pinging 198.18.162.190 with 32 bytes of data:
+Reply from 198.18.162.190: bytes=32 time<1ms TTL=255
+Reply from 198.18.162.190: bytes=32 time<1ms TTL=255
+Reply from 198.18.162.190: bytes=32 time<1ms TTL=255
+Reply from 198.18.162.190: bytes=32 time<1ms TTL=255
+
+Ping statistics for 198.18.162.190:
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),
+Approximate round trip times in milli-seconds:
+    Minimum = 0ms, Maximum = 0ms, Average = 0ms
+# ping 198.18.162.129 source 198.18.162.130
+pull0037-EDGE(config)#do ping 198.18.162.129 source 198.18.162.130
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 198.18.162.129, timeout is 2 seconds:
+Packet sent with a source address of 198.18.162.130
+.....
+Success rate is 0 percent (0/5)
+# ping 198.18.162.129 source 203.0.113.162
+pull0037-EDGE(config)#do ping 198.18.162.129 source 203.0.113.162
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 198.18.162.129, timeout is 2 seconds:
+Packet sent with a source address of 203.0.113.162
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/2 ms
+# show ip access-lists PROTECT-PC
+pull0037-CORE(config)#do show ip access-lists PROTECT-PC
+Standard IP access list PROTECT-PC
+    10 deny   198.18.162.128, wildcard bits 0.0.0.63 log (5 matches)
+    20 permit any (64 matches)
+# show ip interface Gi0/0/0 | inc PROTECT-PC
+pull0037-CORE(config)#do show ip interface Gi0/0/0 | inc PROTECT-PC
+  Inbound  access list is PROTECT-PC
+# show logging | inc PROTECT-PC
+pull0037-CORE(config)#do show logging | inc PROTECT-PC
+*Nov  3 18:49:16.809: %FMANFP-6-IPACCESSLOGDP: R0/0: fman_fp_image: list PROTECT-PC denied icmp 198.18.162.130 -> 198.18.162.129 (8/0), 1 packet
+*Nov  3 18:54:26.852: %FMANFP-6-IPACCESSLOGDP: R0/0: fman_fp_image: list PROTECT-PC denied icmp 198.18.162.130 -> 198.18.162.129 (8/0), 4 packets
+!-- PROTECT-PC is applied to prevent spoofing addresses.
+=== C03 - Policy #3 - PROTECT-ALS Verification ===
+# show ip access-lists PROTECT-ALS
+pull0037-ALS(config)#do show ip access-lists PROTECT-ALS
+Standard IP access list PROTECT-ALS
+    20 permit 192.0.2.69
+    10 permit 198.18.162.128, wildcard bits 0.0.0.63
+    30 deny   any log
+# show ip interface Vlan1 | inc PROTECT-ALS
+pull0037-ALS(config)#do show ip interface Vlan1 | inc PROTECT-ALS
+  Inbound  access list is PROTECT-ALS
+# show run | sec line vty
+pull0037-ALS(config)#do show run | sec line vty
+line vty 0 4
+ access-class PROTECT-ALS in
+ login local
+ transport input telnet ssh
+line vty 5 15
+ login
+!-- PROTECT-ALS bound to Vlan1 and VTY lines; all ACEs have expected hit counts.
