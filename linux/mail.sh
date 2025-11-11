@@ -7,7 +7,7 @@ if [[ $EUID -ne 0 ]]; then
     exit 1
 fi
 
-if echo "$HOSTNAME" = "pull0037-clt.example48.lab"; then
+if $(echo "$HOSTNAME")=="pull0037-clt.example48.lab"; then
     echo "This is a client machine. Mail server setup is skipped."
     sleep 2
     echo "testing mail sending features"
