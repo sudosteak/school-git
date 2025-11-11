@@ -69,6 +69,9 @@ EOF
 # restart named to apply zone file changes
 systemctl restart named
 
+# backup aliases file
+cp -a /etc/aliases{,.bak.$(date +%s)} 2>/dev/null || true
+
 # add aliases to /etc/aliases
 echo "dnsadmin: root" >> /etc/aliases
 echo "geeks: cst8246, dnsadmin, abc@mail.example48.lab., cst8246@mail.example48.lab." >> /etc/aliases
