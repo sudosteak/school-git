@@ -33,7 +33,7 @@ sed -i 's/mydestination = \$myhostname, localhost.\$mydomain, localhost/#mydesti
 sed -i 's/#mydestination = \$myhostname, localhost.\$mydomain, localhost, \$mydomain/mydestination = \$myhostname, localhost.\$mydomain, localhost, \$mydomain/' /etc/postfix/main.cf || true
 sed -i 's/#mynetworks = .*/mynetworks = 172.16.30.0/28, 127.0.0.0/8/' /etc/postfix/main.cf || true
 echo 'masquerade_domains = example48.lab' >> /etc/postfix/main.cf
-sed -i 's/#home_mailbox = .*/home_mailbox = Maildir\//' /etc/postfix/main.cf || true
+sed -i 's|#home_mailbox = .*|home_mailbox = Maildir/|' /etc/postfix/main.cf || true
 
 # enable and start postfix
 systemctl restart postfix
@@ -47,7 +47,7 @@ fi
 
 # add mx record to fwd.example48.lab zone file
 cat > /var/named/fwd.example48.lab <<EOF
-$TTL 86400
+\$TTL 86400
 @   IN  SOA ns1.example48.lab.  dnsadmin.example48.lab. (
                     0       ; serial
                     1D      ; refresh
