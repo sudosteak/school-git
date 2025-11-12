@@ -11,11 +11,11 @@ if [[ $HOSTNAME = "pull0037-clt.example48.lab" ]]; then
     echo "This is a client machine. Mail server setup is skipped."
     sleep 2
     echo "testing mail sending features"
-    echo -e "\n\ngeeks@[172.16.30.48]"
+    echo -e "\ngeeks@[172.16.30.48]\n"
     echo "testing geeks@[172.16.30.48]" | mail -v -s "hi geeks" geeks@[172.16.30.48] 
-    echo -e "\n\ncst8246@mail.example48.lab"
+    echo -e "\n\ncst8246@mail.example48.lab\n"
     echo "testing cst8246@mail.example48.lab" | mail -v -s "hi cst8246" cst8246@mail.example48.lab
-    echo -e "\n\ngeeks@example48.lab"
+    echo -e "\n\ngeeks@example48.lab\n"
     echo "testing masquerading with geeks@example48.lab" | mail -v -s "testing masquerade" geeks@example48.lab
     sleep 2
     echo -e "\nDigging mail.example48.lab"
