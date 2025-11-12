@@ -27,7 +27,7 @@ cp -a /etc/postfix/main.cf{,.bak.$(date +%s)} 2>/dev/null || true
 # configure postfix
 # check if already configured
 echo "configuring postfix"
-cat $HOME/school-git/mail/postfix_main > /etc/postfix/main.cf
+cat $HOME/school-git/linux/mail/postfix_main > /etc/postfix/main.cf
 
 # enable and start postfix
 systemctl restart postfix
@@ -67,7 +67,7 @@ systemctl restart named
 cp -a /etc/aliases{,.bak.$(date +%s)} 2>/dev/null || true
 
 # add aliases to /etc/aliases
-cat $HOME/school-git/mail/aliases > /etc/aliases
+cat $HOME/school-git/linux/mail/aliases > /etc/aliases
 newaliases
 postalias /etc/aliases
 postalias -q geeks
