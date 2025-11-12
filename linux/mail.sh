@@ -79,11 +79,17 @@ systemctl restart named
 cp -a /etc/aliases{,.bak.$(date +%s)} 2>/dev/null || true
 
 # add aliases to /etc/aliases
-echo "dnsadmin: root" >> /etc/aliases
-echo "geeks: cst8246, dnsadmin, abc@mail.example48.lab., cst8246@mail.example48.lab." >> /etc/aliases
-newaliases
-postalias /etc/aliases
-postalias -q geeks
+# checking if already exists
+if grep -q '^cst8246:' /etc/aliases; then
+    echo "aliases already configured"
+else
+    echo "configuring aliases"
+    echo "dnsadmin: root" >> /etc/aliases
+    echo "geeks: cst8246, dnsadmin, abc@mail.example48.lab., cst8246@mail.example48.lab." >> /etc/aliases
+    newaliases
+    postalias /etc/aliases
+    postalias -q geeks
+fi
 
 # restart postfix to apply changes
 systemctl restart postfix
