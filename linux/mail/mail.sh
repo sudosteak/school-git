@@ -26,12 +26,8 @@ cp -a /etc/postfix/main.cf{,.bak.$(date +%s)} 2>/dev/null || true
 
 # configure postfix
 # check if already configured
-if grep -q '^myhostname = mail.example48.lab' /etc/postfix/main.cf; then
-    echo "postfix already configured"
-else
-    echo "configuring postfix"
-    cat ./postfix_main.cf > /etc/postfix/main.cf
-fi
+echo "configuring postfix"
+cat $HOME/school-git/mail/postfix_main > /etc/postfix/main.cf
 
 # enable and start postfix
 systemctl restart postfix
@@ -71,7 +67,7 @@ systemctl restart named
 cp -a /etc/aliases{,.bak.$(date +%s)} 2>/dev/null || true
 
 # add aliases to /etc/aliases
-cat ./aliases > /etc/aliases
+cat $HOME/school-git/mail/aliases > /etc/aliases
 newaliases
 postalias /etc/aliases
 postalias -q geeks
