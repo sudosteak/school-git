@@ -25,15 +25,21 @@ dnf install -y postfix mailx sendmail
 cp -a /etc/postfix/main.cf{,.bak.$(date +%s)} 2>/dev/null || true
 
 # configure postfix
-sed -i 's/myhostname = .*/myhostname = mail.example48.lab/' /etc/postfix/main.cf || true
-sed -i 's/#mydomain = .*/mydomain = example48.lab/' /etc/postfix/main.cf || true
-sed -i 's/#myorigin = .*/myorigin = \$mydomain/' /etc/postfix/main.cf || true
-sed -i 's/inet_interfaces = .*/inet_interfaces = all/' /etc/postfix/main.cf || true
-sed -i 's/mydestination = \$myhostname, localhost.\$mydomain, localhost/#mydestination = \$myhostname, localhost.\$mydomain, localhost/' /etc/postfix/main.cf || true
-sed -i 's/#mydestination = \$myhostname, localhost.\$mydomain, localhost, \$mydomain/mydestination = \$myhostname, localhost.\$mydomain, localhost, \$mydomain/' /etc/postfix/main.cf || true
-sed -i 's/#mynetworks = .*/mynetworks = 172.16.30.0/28, 127.0.0.0/8/' /etc/postfix/main.cf || true
-echo 'masquerade_domains = example48.lab' >> /etc/postfix/main.cf
-sed -i 's|#home_mailbox = .*|home_mailbox = Maildir/|' /etc/postfix/main.cf || true
+# check if already configured
+if grep -q '^myhostname = mail.example48.lab' /etc/postfix/main.cf; then
+    echo "postfix already configured"
+else
+    echo "configuring postfix"
+    sed -i 's/myhostname = .*/myhostname = mail.example48.lab/' /etc/postfix/main.cf || true
+    sed -i 's/#mydomain = .*/mydomain = example48.lab/' /etc/postfix/main.cf || true
+    sed -i 's/#myorigin = .*/myorigin = \$mydomain/' /etc/postfix/main.cf || true
+    sed -i 's/inet_interfaces = .*/inet_interfaces = all/' /etc/postfix/main.cf || true
+    sed -i 's/mydestination = \$myhostname, localhost.\$mydomain, localhost/#mydestination = \$myhostname, localhost.\$mydomain, localhost/' /etc/postfix/main.cf || true
+    sed -i 's/#mydestination = \$myhostname, localhost.\$mydomain, localhost, \$mydomain/mydestination = \$myhostname, localhost.\$mydomain, localhost, \$mydomain/' /etc/postfix/main.cf || true
+    sed -i 's/#mynetworks = .*/mynetworks = 172.16.30.0/28, 127.0.0.0/8/' /etc/postfix/main.cf || true
+    echo 'masquerade_domains = example48.lab' >> /etc/postfix/main.cf
+    sed -i 's|#home_mailbox = .*|home_mailbox = Maildir/|' /etc/postfix/main.cf || true
+fi
 
 # enable and start postfix
 systemctl restart postfix
