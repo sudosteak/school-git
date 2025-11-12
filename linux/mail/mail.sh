@@ -70,7 +70,7 @@ cp -a /etc/aliases{,.bak.$(date +%s)} 2>/dev/null || true
 cat $HOME/school-git/linux/mail/aliases > /etc/aliases
 newaliases
 postalias /etc/aliases
-postalias -q geeks
+postalias -q geeks /etc/aliases
 
 # restart postfix to apply changes
 systemctl restart postfix
