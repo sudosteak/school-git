@@ -2,11 +2,6 @@
 
 set -euo pipefail
 
-if [[ $EUID -ne 0 ]]; then
-    echo "run as root"
-    exit 1
-fi
-
 if [[ $HOSTNAME = "pull0037-clt.example48.lab" ]]; then
     echo "This is a client machine. Mail server setup is skipped."
     sleep 2
@@ -25,6 +20,10 @@ if [[ $HOSTNAME = "pull0037-clt.example48.lab" ]]; then
     exit 0
 fi 
 
+if [[ $EUID -ne 0 ]]; then
+    echo "run as root"
+    exit 1
+fi
 
 dnf install -y postfix mailx sendmail
 
