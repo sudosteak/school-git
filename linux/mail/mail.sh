@@ -18,6 +18,8 @@ if [[ $HOSTNAME = "pull0037-clt.example48.lab" ]]; then
     echo -e "\n\ngeeks@example48.lab\n"
     echo "testing masquerading with geeks@example48.lab" | mail -v -s "testing masquerade" geeks@example48.lab
     sleep 2
+    echo -e "\nDigging example48.lab"
+    dig example48.lab mx
     echo -e "\nDigging mail.example48.lab"
     dig mail.example48.lab
     exit 0
