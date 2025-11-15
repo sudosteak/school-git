@@ -10,3 +10,6 @@ github-obsidian.pub
 .idea/
 
 .trunk
+
+# library files
+library.db
