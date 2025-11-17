@@ -32,8 +32,7 @@ cursor.execute("SELECT member_id, first_name, last_name FROM member ORDER BY las
 
 # fetch and print the results
 rows = cursor.fetchall()
-for row in rows:
-    print(row)
+print(rows)
 
 # close the connection
 cursor.close()
