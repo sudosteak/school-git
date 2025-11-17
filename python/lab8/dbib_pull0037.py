@@ -27,11 +27,6 @@ print("connected to database")
 # create a cursor
 cursor = connection.cursor()
 
-# execute a simple query
-cursor.execute('\dt')
-
-# fetch and print the results
-
 # close the connection
 cursor.close()
 connection.close()
