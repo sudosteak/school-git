@@ -28,7 +28,7 @@ print("connected to database")
 cursor = connection.cursor()
 
 # execute a simple query
-cursor.execute("SELECT member_id, first_name, last_name FROM members ORDER BY last_name;")
+cursor.execute("SELECT member_id, first_name, last_name FROM member ORDER BY last_name;")
 
 # fetch and print the results
 rows = cursor.fetchall()
