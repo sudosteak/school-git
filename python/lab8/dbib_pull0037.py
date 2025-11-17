@@ -12,9 +12,11 @@
 import psycopg2
 import sys
 
+
 # constants
 DB_NAME = input("Enter database name: ")
 DB_USER = input("Enter database user: ")
+
 
 # database connections
 try:
