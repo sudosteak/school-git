@@ -28,11 +28,9 @@ print("connected to database")
 cursor = connection.cursor()
 
 # execute a simple query
-cursor.execute("SELECT member_id, first_name, last_name FROM member ORDER BY last_name;")
+cursor.execute('\dt')
 
 # fetch and print the results
-rows = cursor.fetchall()
-print(rows)
 
 # close the connection
 cursor.close()
