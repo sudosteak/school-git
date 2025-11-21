@@ -1,0 +1,11 @@
+# users OU
+dn: ou=accounts,dc=example48,dc=lab
+ou: accounts
+objectClass: top
+objectClass: organizationalUnit
+
+# groups OU
+dn: ou=groups,dc=example48,dc=lab
+ou: groups
+objectClass: top
+objectClass: organizationalUnit

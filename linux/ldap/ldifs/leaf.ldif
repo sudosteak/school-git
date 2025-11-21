@@ -1,0 +1,52 @@
+# user linuxuser1
+dn: uid=linuxuser1,ou=accounts,dc=example48,dc=lab
+objectClass: inetOrgPerson
+objectClass: posixAccount
+cn: user 1
+sn: user 1
+uid: linuxuser1
+uidNumber: 1001
+gidNumber: 1000
+homeDirectory: /home/linuxuser1
+loginShell: /bin/bash
+mail: linuxuser1@example48.lab
+userPassword:
+
+# user linuxuser2
+dn: uid=linuxuser2,ou=accounts,dc=example48,dc=lab
+objectClass: inetOrgPerson
+objectClass: posixAccount
+cn: user 2
+sn: user 2
+uid: linuxuser2
+uidNumber: 1002
+gidNumber: 1000
+homeDirectory: /home/linuxuser2
+loginShell: /bin/bash
+mail: linuxuser2@example48.lab
+userPassword:
+
+# user linuxuser3
+dn: uid=linuxuser3,ou=accounts,dc=example48,dc=lab
+objectClass: inetOrgPerson
+objectClass: posixAccount
+cn: user 3
+sn: user 3
+uid: linuxuser3
+uidNumber: 1003
+gidNumber: 1000
+homeDirectory: /home/linuxuser3
+loginShell: /bin/bash
+mail: linuxuser3@example48.lab
+userPassword:
+
+# group users
+dn: cn=users,ou=groups,dc=example48,dc=lab
+objectClass: posixGroup
+# group name
+cn: user
+# linux gid
+gidNumber: 1000
+memberUid: linuxuser1
+memberUid: linuxuser2
+memberUid: linuxuser3

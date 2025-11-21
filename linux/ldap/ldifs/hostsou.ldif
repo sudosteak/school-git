@@ -1,0 +1,5 @@
+# hosts OU
+dn: ou=hosts,dc=example48,dc=lab
+ou: hosts
+objectClass: top
+objectClass: organizationalUnit

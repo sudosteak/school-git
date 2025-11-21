@@ -1,0 +1,13 @@
+# host happy
+dn: cn=happy.example48.lab,ou=hosts,dc=example48,dc=lab
+objectClass: device
+objectClass: ipHost
+cn: happy.example48.lab
+ipHostNumber: 172.16.32.48
+
+# host peachy
+dn: cn=peachy.example48.lab,ou=hosts,dc=example48,dc=lab
+objectClass: device
+objectClass: ipHost
+cn: peachy.example48.lab
+ipHostNumber: 172.16.33.48

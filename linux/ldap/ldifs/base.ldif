@@ -1,0 +1,4 @@
+dn: dc=example48,dc=lab
+dc: example48
+objectClass: top
+objectClass: domain

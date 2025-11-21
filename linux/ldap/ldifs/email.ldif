@@ -1,0 +1,4 @@
+dn: uid=linuxuser1,ou=accounts,dc=example48,dc=lab
+changetype: modify
+add: mail
+mail: 2linuxuser1@example48.lab
