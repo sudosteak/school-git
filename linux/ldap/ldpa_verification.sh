@@ -1,4 +1,4 @@
-ldapsearch -x -H ldap://IP -b "dc=example48,dc=lab"
+ldapsearch -x -H ldap://172.16.30.48 -b "dc=example48,dc=lab"
 getent hosts
 
 iptables -L -n | grep 389
