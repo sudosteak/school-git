@@ -9,7 +9,8 @@ github-obsidian.pub
 # pycharm
 .idea/
 
-.trunk
-
 # library files
 library.db
+
+# .resources/ directory
+.resources
