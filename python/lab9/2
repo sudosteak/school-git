@@ -1,0 +1,66 @@
+Lab #9: Submission details
+~ Library: relational database management system ~
+Due date
+• Due date: The lab is due by the end of your lab period of week #12.
+This means that we expect that you have completed the lab and submitted it to
+Brightspace according to the submission instructions detailed below.
+• Extended due date: We accept lab submissions without penalty until Sunday of week
+#12 @ midnight. We consider this an extension to the due date.
+• After the extended due date, the assigned grade is zero. You may submit an
+incomplete lab for partial marks. After the extended due date, no extension will be
+given regardless of circumstances.
+Submission instructions
+Any submission that does not follow the submission instructions below will NOT be marked
+and will result in a grade of zero.
+Submission details
+• Submission file formats
+o One PDF file with filename: lab9_library_<networkID>.pdf that
+includes, in that order:
+▪ Screenshot #1 (database): The insertion statement from the
+insert_loan.sql file
+• All SQL keywords must be in all upper case letters.
+• The font type must be in type font “Courier New”.
+▪ Code: Python program code in type font “Courier New”, single-
+spaced.
+▪ Testplan: Completed test plan table
+o No ZIP files
+o No cover page
+• Additional submission requirements
+o Note: Your lab professor may have additional submission requirements.
+• Submission location: In Brightspace of your CST8245 course theory section under:
+o “Assignments”, named “Lab9”.
+Submission checklist
+• Only submit your own work. What is considered plagiarism:
+o any expression(s) used but not taught in the course unless you can demonstrate
+that: 1. you understand it, 2. you have a good reason to use it, 3. and you include
+the source as a comment in your code
+o any set of instructions not followed as described
+o any code copied from another source
+• You read & followed the submission instructions. Make sure that you submit:
+o the completed lab
+o in the right submission & file format
+o in the right course section
+o in the right course
+• You read the marking guide & verified that your code meets the requirements.
+Marking guide
+The lab is worth 7 marks of your total course mark.
+Lab 9.1: Database setup: 2 mark towards final grade
+• [2] screenshot #1: multi-record insert
+o format: one record per line
+o keywords in all upper case & font type in “Courier New”
+o query statement to retrieve FK values
+Lab 9.2: Python program: 5 mark towards final grade
+• [3] Program code:
+o flow control
+o function definition & call
+o Python style guide
+• [2] Test plan:
+o table format
+o includes all required test cases
+o clear description
+FYI: Brightspace feedback rubric for project grading
+Note: Subject to change
+Total: .
+[2] Insert (font/case, format, fk query): .
+[3] Python (flow (iteration, decision), functions (def, call)): .
+[2] Test plan (complete, format, data): .

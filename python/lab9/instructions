@@ -1,0 +1,157 @@
+Section A – Populate tables
+Table record description
+We will populate tables using the following requirements:
+ member:
+o Number of records (minimum): 6
+o Insert statement: CLI-based insertion at psql prompt, one record at a time
+o Constraints:
+ Primary key: surrogate key, managed by database
+ Foreign key: n/a
+o See Syntax practice #1 below.
+ book:
+o Number of records (minimum): 6
+o Insert statement: imported from a text file
+o Constraints:
+ Primary key: natural key, specified for each record in SQL insertion statement
+ Foreign key: n/a
+o See Syntax practice #2 below.
+ book_copy:
+o Number of records (minimum): 10
+o Insert statement: imported from a text file
+o Constraints:
+ Primary key: surrogate key, managed by database
+ Foreign key: value retrieved using a query
+o See Syntax practice #3 below.
+ loan:
+o Number of records (minimum): 12
+ Some book loans are completed (book copies have been returned), some by the
+same member: minimum 6
+ Some book loans are current (book copies have not been returned): minimum 4
+ Some book loans are current (book copies have not been returned) but are past
+the due date: minimum 2
+ Some members have one or more copies on loan (past and/or current).
+o Insert statement: imported from a text file
+o Constraints:
+ Primary key: surrogate key, managed by database
+ Foreign keys (2): values retrieved using a query
+o See Exercise #4 below.
+Syntax practice #1: Insert records (with surrogate PK) from the psql prompt.
+Populate the table member
+ Insert records for the following members: Chris Chapter, Danny Digest, Finlay Footnote:
+o INSERT INTO member (first_name, last_name, phone)
+VALUES (‘Chris’, ‘Chapter’, ‘6131231234’);
+o INSERT INTO member (first_name, last_name, phone)
+VALUES (‘Danny’, ‘Digest’, ‘6131112233’);
+o INSERT INTO member (first_name, last_name, phone)
+VALUES (‘Finlay’, ‘Footnote’, ‘6138889999’);
+ Exercise: Insert a few more member records for the members: Robin Reader, Tracy Tome,
+Jessie Journal, and one record for yourself.
+ Verify that the records have been inserted by displaying all records with:
+SELECT * FROM member;
+ Query practice: Practice a few queries.
+o SELECT last_name FROM member;
+o SELECT first_name, last_name FROM member;
+o List all records with the last name “Chapter”:
+SELECT * FROM member WHERE last_name = ‘Chapter’;
+Syntax practice #2: Insert records (with natural PK) by importing from a text file.
+ The file contains one INSERT statement to create multiple records for a table.
+o The values for each record are written on a separate line and enclosed by round braces.
+o Individual records are separated by colons and the entire SQL INSERT statement is
+terminated by a semi-colon.
+ Syntax:
+INSERT INTO table (column_names) VALUES
+(values_list), # each value list represents one record
+(values_list),
+(values_list);
+Populate the table book
+ Create a file named insert_book.sql in the sql_insert.d directory.
+ Syntax: Write the following multi-line record into the file:
+INSERT INTO book (isbn, title, rental_days) VALUES
+(‘isbn1’, ‘1984’, 14),
+(‘isbn3’, ‘Emma’, 7),
+(‘isbn4’, ‘Moby Dick’, 7),
+(‘isbn5’, ‘Pride and Prejudice’, 14),
+(‘isbn6’, ‘Hamlet, 14); # terminate with semi-colon
+ Start psql from the sql_insert.d directory.
+Note: You can start from any directory as long as you provide the path to the file.
+ Import the file with the \i sub-command: \i insert_book.sql
+ Verify that the rows have been inserted by displaying all records with:
+SELECT * FROM book;
+ Query practice: Practice a few queries.
+o SELECT title, rental_days FROM book;
+o SELECT title FROM book WHERE title = ‘Moby Dick’;
+Syntax practice #3: Insert records (with surrogate PK & queried FK) by importing from a text file.
+Populate the table book_copy
+ Create a file named insert_book_copy.sql in the sql_insert.d directory.
+ Insert records with the following criteria:
+o Number of book copies: each book has either two or three copies.
+o Acquisition date: use four different acquisition dates.
+ Syntax example:
+o INSERT INTO book_copy (isbn, acquisition_date) VALUES
+((SELECT isbn FROM book WHERE title = ‘1984’),
+‘2020-12-24’);
+Note:
+ To insert the foreign key (which is a primary key in the parent table), we use an
+SQL query statement in conjunction with a more meaningful attribute.
+ The SELECT statement in the inner braces is a nested SQL query statement: it
+executes first and returns the queried value. The INSERT statement uses the
+returned value to create the record.
+ Example: Creates three book copies for ‘Emma’ with two copies acquired on the same date.
+o INSERT INTO book_copy (isbn, acquisition_date) VALUES
+((SELECT isbn FROM book WHERE title = ‘Emma’),
+‘2020-12-24’),
+((SELECT isbn FROM book WHERE title = ‘Emma’),
+‘2021-03-21’),
+((SELECT isbn FROM book WHERE title = ‘Emma’),
+‘2021-03-21’);
+ Exercise: Add the additional minimum number of records to the text file and import all records
+into the database.
+ Import the file with the \i sub-command: \i insert_book_copy.sql
+ Verify that the rows have been inserted by displaying all records with:
+SELECT * FROM book_copy;
+ Query practice: Practice a few queries.
+o SELECT isbn FROM book_copy;
+o SELECT isbn, acquisition_date FROM book_copy;
+o SELECT isbn, acquisition_date FROM book_copy WHERE
+acquisition_date >= ‘2021-03-21’;
+Exercise #4
+Populate the table loan
+ Create a file named insert_loan.sql in the sql_insert.d directory.
+ Create all loan records using a single multi-line INSERT statement in the text file.
+ To resolve the two foreign keys:
+o Look up book copy values in the book_copy table.
+o Query the member_id value from the member table based on last name.
+ Example:
+o INSERT INTO loan (copy_id, member_id, loan_date,
+return_date) VALUES
+(1, (SELECT member_id FROM member WHERE last_name =
+‘Digest’), 2021-12-21, 2021-12-31),
+(1, (SELECT member_id FROM member WHERE last_name =
+‘Chapter’), 2022-01-21, 2022-01-31),
+(2, (SELECT member_id FROM member WHERE last_name =
+‘Chapter’), 2022-01-21, 2022-01-31),
+(3, (SELECT member_id FROM member WHERE last_name =
+‘Footnote’), 2022-03-23, 2022-04-01);
+ Add additional records: follow the requirements listed in the table description above.
+ Import the file into psql.
+ Verify that the record insertion was successful.
+Section B – Manage existing records
+Syntax practice #5: Update tuples: UPDATE
+ Syntax: UPDATE table SET column = value WHERE condition;
+ Explanation:
+o identify table to update,
+o set new value in selected column,
+o where the value to be changed matches the given record criteria.
+ Example: To update book return dates:
+Note: You may have to adjust values based on record values in your database.
+o UPDATE loan SET return_date = ‘2020-04-20’ WHERE
+return_date = ‘2020-03-20’ ;
+o UPDATE loan SET return_date = ‘2020-03-20’ WHERE isbn =
+‘isbn2’ ;
+o UPDATE book SET rental_days = 7 WHERE title = ‘Emma’;
+o UPDATE book SET rental_days = 21 WHERE rental_days = 14;
+Note: Updates multiple records.
+Syntax practice #6: Delete tuples: DELETE
+ Syntax: DELETE FROM table WHERE condition;
+Note: A member cannot be deleted if s/he has a current loan.
+ Example: DELETE FROM member WHERE last_name = ‘Terminator’;

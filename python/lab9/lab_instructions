@@ -1,0 +1,118 @@
+Lab #9.2: Execute SQL statement using Python
+Python program: Library database management
+Overview
+Objective
+Use Python programming language to connect to a database and manage data in the database.
+We will develop a Python program that interfaces with the database in the following labs:
+ Lab 7: Create a skeleton program for a database application.
+ Lab 8: Set up database connectivity and cursor setup.
+ Lab 9: Create and call functions that query the database.
+Outcomes
+ Create a skeleton Python program that is driven by a user’s menu selection by
+implementing proper flow control and decomposition.
+Knowledge expected
+This is a review of previously acquired knowledge in Python programming.
+Submission instructions
+ READ ALL THE WORDS
+ You must follow ALL submission instructions: Submission instructions are explained in the
+“Lab 9 submission details” document, posted on BrightSpace. ANY submission instructions
+below NOT followed result in a grade of zero.
+Note: This includes extra functionality that has not been requested.
+Background information
+Displaying an SQL query in Python requires a two-step procedure:
+ Execute the SQL query.
+ Display the result set.
+Execute an SQL query
+To execute an SQL query the following steps have to be followed:
+ Form the SQL query and store it in a variable. Use the variable name sql_query.
+ If a query is based on values provided by user input, store the values in a variable named
+sql_data.
+ Execute the SQL statement using the cursor object and the execute method.
+Code example without value input:
+# form query
+sql_query = “SELECT * FROM member ORDER BY last_name”
+# execute query
+cursor.execute(sql_query)
+Note: A semi-colon is not required to terminate the SQL statement.
+Code example with single value input:
+# prompt for user input
+member_last_name = input(“Enter member last name: “)
+# store value
+sql_data = (member_last_name,) # trailing comma with single data item
+# form query
+sql_query = “SELECT * FROM member WHERE last_name=%s”
+# execute query
+cursor.execute(sql_query, sql_data)
+Code example with multi-value input:
+# prompt for user input, here as a list
+member_name = input(“Enter member first and last name:
+“).split()
+# store values
+sql_data = (member_name[0],member_name[1])
+# form query and store in variable
+sql_query = “SELECT member_id FROM member\
+WHERE last_name=%s AND fist_name=%s”
+# execute query
+cursor.execute(sql_query, sql_data)
+Note: When more than one value is passed into a query, store them in the order that
+they are used in the query.
+Note: The backslash in the query statement indicates that the statement continues on
+the next line: it escapes the newline character.
+Display the result set of an SQL query
+ Once a query is executed the result set is stored in memory until the next SQL statement
+is executed. The cursor object is used to move through the current in-memory result set.
+ To display the result set you need to display the result set one record at a time with:
+cursor.fetchone().
+ Example: Display the query result set after the query has been executed.
+record = cursor.fetchone()
+while record:
+print(*record) # the ‘*’ is optionally used for record formatting
+record = cursor.fetchone()
+Section A - Function details for queries against database
+ query_books()
+o Function purpose: display all books, sorted by title
+o Function parameters: none
+o Function return: none
+o Function body: execute and display query
+Note: Query of table(s): book
+ query_member_by_lastname()
+o Function purpose: display member information of a given member
+o Function parameter(s): last name
+o Function return: none
+o Function body: execute and display query
+Note: Query of table(s): member
+ Optionally, you can create a display_query() function that is called within the
+query functions. The function does not have any parameters or return value: it uses the
+global variable cursor to iterate through and print the result set.
+Section B - Main program functionality
+Program description
+ The program performs the following database queries:
+o Display all books, sorted by title in ascending order.
+ Displayed attributes: title, isbn, rental days
+ User input: none
+ Query type: single table query, sorted
+ Function call: query_books() to execute and display query.
+o Display the members for a given last name.
+ Displayed attributes: member id, last name, first name, phone
+ User input: member last name
+ Query type: single table query, filtered
+ Call the function get_attribute_value() to obtain the last name.
+ Call the function query_member_by_lastname() to execute and
+display query.
+o Quit option: The program runs until the user quits.
+Note: The main objective of our application is to access a database with a program written in
+Python. A full-scale program would include write operations to the database (insert, update,
+delete), as well as error checking and validation (example: Verify that the member exist in the
+database before searching for member loans.)
+Section C - Program verification
+Test plan
+Execute the program and verify that it works as expected.
+ Create a test plan respecting the 5-column table format.
+ Devise at least five tests to test all menu options, for example:
+o The user quits immediately.
+o The user selects on menu option, then quits.
+o The user selects more than one menu option, then quits.
+o All books are displayed.
+o An existing member is displayed.
+o How does your program handle a non-existing member – note the result.
+ If it crashes, document the Python error message.
