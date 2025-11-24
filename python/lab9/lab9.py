@@ -9,9 +9,6 @@
 import psycopg2
 import sys
 
-# Database connection parameters - prompting user as per previous lab style
-# or we could hardcode defaults for easier testing if permitted.
-# Using input as per dbib_pull0037.py example.
 
 def get_db_connection():
     try:
