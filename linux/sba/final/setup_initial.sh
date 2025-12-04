@@ -23,10 +23,7 @@ echo "Performing Initial Setup for MN=${MN}..."
 
 # 1. Configure Static IP & Alias
 # Find active connection
-IFACE=$(ip -o -4 route show to default | awk '{print $5}' | head -n1)
-if [ -z "$IFACE" ]; then
-    IFACE=$(ip -o link show | awk -F': ' '{print $2}' | grep -v lo | head -n 1)
-fi
+IFACE="enp2s0"
 
 CONN=$(nmcli -t -f NAME,DEVICE con show --active | grep ":${IFACE}" | cut -d: -f1 | head -n1)
 

@@ -26,11 +26,7 @@ echo "Configuring Master DNS for ${DOMAIN} on ${SERVER_IP} (MN=${MN})..."
 
 # Network Alias Setup
 # Find active connection and interface
-IFACE=$(ip -o -4 route show to default | awk '{print $5}' | head -n1)
-if [ -z "$IFACE" ]; then
-    # Fallback if no default route
-    IFACE=$(ip -o link show | awk -F': ' '{print $2}' | grep -v lo | head -n 1)
-fi
+IFACE="enp2s0"
 
 CONN=$(nmcli -t -f NAME,DEVICE con show --active | grep ":${IFACE}" | cut -d: -f1 | head -n1)
 
