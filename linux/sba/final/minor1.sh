@@ -12,7 +12,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Configuration
-MN=${1:-105}
+MN=${1:-48}
 CLIENT_NET="172.16.31.0/24"
 
 echo "Configuring SSH Access..."
@@ -62,12 +62,35 @@ chmod 600 /home/admin/.ssh/authorized_keys
 chmod 700 /home/admin/.ssh
 
 # Firewall Configuration
-echo "Configuring Firewall..."
-systemctl enable --now firewalld
-firewall-cmd --set-default-zone=drop
-firewall-cmd --permanent --zone=public --add-source=${CLIENT_NET}
-firewall-cmd --permanent --zone=public --add-service=ssh
-firewall-cmd --reload
+echo "Configuring Firewall (iptables)..."
+
+# Disable firewalld
+systemctl disable --now firewalld
+
+# Install iptables-services
+dnf install -y iptables-services
+systemctl enable --now iptables
+
+# Flush existing rules
+iptables -F
+iptables -X
+
+# Set default policies
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+
+# Allow loopback
+iptables -A INPUT -i lo -j ACCEPT
+
+# Allow established/related connections
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Allow SSH from Client Network
+iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 22 -j ACCEPT
+
+# Save rules
+iptables-save > /etc/sysconfig/iptables
 
 # Restart SSH
 systemctl restart sshd

@@ -12,7 +12,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Configuration
-MN=${1:-105} # Default MN to 105 if not provided
+MN=${1:-48} # Default MN to 48 if not provided
 DOMAIN="blue.lab"
 NET_RED="172.16.30"
 NET_BLUE="172.16.31"
@@ -38,15 +38,15 @@ if [ -n "$CONN" ]; then
     echo "Configuring Alias IP ${ALIAS_IP} on connection '${CONN}'..."
     # Check if IP exists in config (not just runtime)
     if ! nmcli con show "$CONN" | grep -q "${ALIAS_IP}"; then
-        nmcli con mod "$CONN" +ipv4.addresses "${ALIAS_IP}/24"
+        nmcli con mod "$CONN" +ipv4.addresses "${ALIAS_IP}/16"
         # We don't want to disrupt connection if possible, but IP add needs up
-        # ip addr add ${ALIAS_IP}/24 dev ${IFACE} || true # Temporary add to avoid full restart drop
+        # ip addr add ${ALIAS_IP}/16 dev ${IFACE} || true # Temporary add to avoid full restart drop
         nmcli con up "$CONN"
     fi
 else
     echo "Warning: Could not determine active connection. Skipping Alias IP setup via nmcli."
     # Try ip addr add as fallback
-    ip addr add "${ALIAS_IP}/24" dev "$IFACE" || true
+    ip addr add "${ALIAS_IP}/16" dev "$IFACE" || true
 fi
 
 # Install packages
@@ -151,7 +151,7 @@ cat > /var/named/30.16.172.db <<EOF
 
 ${MN}      PTR     dns1.${DOMAIN}.
 ${MN}      PTR     www1.${DOMAIN}.
-${MN}      PTR     www2.${DOMAIN}.
+${MN}      PTR     www2.${DOMAIN}.105
 ${MN}      PTR     mail.${DOMAIN}.
 EOF
 
@@ -181,23 +181,39 @@ chmod 640 /var/named/30.16.172.db
 chmod 640 /var/named/32.16.172.db
 
 # Firewall Configuration
-echo "Configuring Firewall..."
-# Ensure firewalld is running
-systemctl enable --now firewalld
+echo "Configuring Firewall (iptables)..."
 
-# Set default zone to drop (block everything by default)
-firewall-cmd --set-default-zone=drop
+# Disable firewalld
+systemctl disable --now firewalld
 
-# Allow client network in public zone (or create a custom zone)
-# We use public zone for client access
-firewall-cmd --permanent --zone=public --add-source=${CLIENT_NET}
-firewall-cmd --permanent --zone=public --add-service=dns
-# Explicitly add ports just in case
-firewall-cmd --permanent --zone=public --add-port=53/tcp
-firewall-cmd --permanent --zone=public --add-port=53/udp
+# Install iptables-services
+dnf install -y iptables-services
+systemctl enable --now iptables
 
-# Reload firewall
-firewall-cmd --reload
+# Flush existing rules
+iptables -F
+iptables -X
+
+# Set default policies
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+
+# Allow loopback
+iptables -A INPUT -i lo -j ACCEPT
+
+# Allow established/related connections
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Allow SSH from Client Network
+iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 22 -j ACCEPT
+
+# Allow DNS from Client Network
+iptables -A INPUT -p udp -s ${CLIENT_NET} --dport 53 -j ACCEPT
+iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 53 -j ACCEPT
+
+# Save rules
+iptables-save > /etc/sysconfig/iptables
 
 # Start Service
 echo "Starting named service..."

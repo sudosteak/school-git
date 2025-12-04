@@ -12,7 +12,7 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Configuration
-MN=${1:-105}
+MN=${1:-48}
 NET_RED="172.16.30"
 NET_BLUE="172.16.31"
 NET_ALIAS="172.16.32"
@@ -28,11 +28,11 @@ if [ -z "$IFACE" ]; then IFACE=$(ip -o link show | awk -F': ' '{print $2}' | gre
 CONN=$(nmcli -t -f NAME,DEVICE con show --active | grep ":${IFACE}" | cut -d: -f1 | head -n1)
 if [ -n "$CONN" ]; then
     if ! nmcli con show "$CONN" | grep -q "${ALIAS_IP}"; then
-        nmcli con mod "$CONN" +ipv4.addresses "${ALIAS_IP}/24"
+        nmcli con mod "$CONN" +ipv4.addresses "${ALIAS_IP}/16"
         nmcli con up "$CONN"
     fi
 else
-    ip addr add "${ALIAS_IP}/24" dev "$IFACE" || true
+    ip addr add "${ALIAS_IP}/16" dev "$IFACE" || true
 fi
 
 # Install Apache and SSL
@@ -91,13 +91,36 @@ cat > /etc/httpd/conf.d/vhosts.conf <<EOF
 EOF
 
 # Firewall Configuration
-echo "Configuring Firewall..."
-systemctl enable --now firewalld
-firewall-cmd --set-default-zone=drop
-firewall-cmd --permanent --zone=public --add-source=${CLIENT_NET}
-firewall-cmd --permanent --zone=public --add-service=http
-firewall-cmd --permanent --zone=public --add-service=https
-firewall-cmd --reload
+echo "Configuring Firewall (iptables)..."
+
+# Disable firewalld
+systemctl disable --now firewalld
+
+# Install iptables-services
+dnf install -y iptables-services
+systemctl enable --now iptables
+
+# Flush existing rules
+iptables -F
+iptables -X
+
+# Set default policies
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+
+# Allow loopback
+iptables -A INPUT -i lo -j ACCEPT
+
+# Allow established/related connections
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Allow HTTP/HTTPS from Client Network
+iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 80 -j ACCEPT
+iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 443 -j ACCEPT
+
+# Save rules
+iptables-save > /etc/sysconfig/iptables
 
 # Start Service
 echo "Starting httpd..."
