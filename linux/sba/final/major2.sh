@@ -91,29 +91,10 @@ cat > /etc/httpd/conf.d/vhosts.conf <<EOF
 EOF
 
 # Firewall Configuration
-echo "Configuring Firewall (iptables)..."
+echo "Configuring Firewall (iptables) - Appending rules..."
 
-# Disable firewalld
-systemctl disable --now firewalld
-
-# Install iptables-services
-dnf install -y iptables-services
+# Ensure iptables is running
 systemctl enable --now iptables
-
-# Flush existing rules
-iptables -F
-iptables -X
-
-# Set default policies
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
-iptables -P OUTPUT ACCEPT
-
-# Allow loopback
-iptables -A INPUT -i lo -j ACCEPT
-
-# Allow established/related connections
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 # Allow HTTP/HTTPS from Client Network
 iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 80 -j ACCEPT

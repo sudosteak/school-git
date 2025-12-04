@@ -181,32 +181,10 @@ chmod 640 /var/named/30.16.172.db
 chmod 640 /var/named/32.16.172.db
 
 # Firewall Configuration
-echo "Configuring Firewall (iptables)..."
+echo "Configuring Firewall (iptables) - Appending rules..."
 
-# Disable firewalld
-systemctl disable --now firewalld
-
-# Install iptables-services
-dnf install -y iptables-services
+# Ensure iptables is running
 systemctl enable --now iptables
-
-# Flush existing rules
-iptables -F
-iptables -X
-
-# Set default policies
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
-iptables -P OUTPUT ACCEPT
-
-# Allow loopback
-iptables -A INPUT -i lo -j ACCEPT
-
-# Allow established/related connections
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-
-# Allow SSH from Client Network
-iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 22 -j ACCEPT
 
 # Allow DNS from Client Network
 iptables -A INPUT -p udp -s ${CLIENT_NET} --dport 53 -j ACCEPT

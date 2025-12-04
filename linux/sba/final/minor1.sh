@@ -62,31 +62,13 @@ chmod 600 /home/admin/.ssh/authorized_keys
 chmod 700 /home/admin/.ssh
 
 # Firewall Configuration
-echo "Configuring Firewall (iptables)..."
+echo "Configuring Firewall (iptables) - Appending rules..."
 
-# Disable firewalld
-systemctl disable --now firewalld
-
-# Install iptables-services
-dnf install -y iptables-services
+# Ensure iptables is running
 systemctl enable --now iptables
 
-# Flush existing rules
-iptables -F
-iptables -X
-
-# Set default policies
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
-iptables -P OUTPUT ACCEPT
-
-# Allow loopback
-iptables -A INPUT -i lo -j ACCEPT
-
-# Allow established/related connections
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-
-# Allow SSH from Client Network
+# Allow SSH from Client Network (Check if exists first to avoid duplicates)
+iptables -C INPUT -p tcp -s ${CLIENT_NET} --dport 22 -j ACCEPT 2>/dev/null || \
 iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 22 -j ACCEPT
 
 # Save rules
