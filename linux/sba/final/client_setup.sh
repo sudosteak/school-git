@@ -112,9 +112,6 @@ dig @172.16.31.48 www1.${DOMAIN} || echo "DNS Lookup Failed"
 echo "----------------------------------------------------------------"
 echo "Setting up NFS Client (Minor 2)..."
 
-# Install utils
-dnf install -y nfs-utils
-
 # Create Mount Point
 mkdir -p /mnt/nfs
 
