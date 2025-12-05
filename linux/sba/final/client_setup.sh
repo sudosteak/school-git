@@ -28,9 +28,6 @@ echo "Alias IP:  ${ALIAS_IP}"
 echo "----------------------------------------------------------------"
 echo "Setting up DNS Slave (Major 1)..."
 
-# Install bind
-dnf install -y bind bind-utils
-
 # Configure named.conf
 echo "Configuring /etc/named.conf..."
 cp -n /etc/named.conf /etc/named.conf.bak || true
@@ -102,12 +99,12 @@ systemctl restart named
 
 # Update resolv.conf to use localhost (so we use our slave zones)
 echo "Updating /etc/resolv.conf..."
-#echo "search ${DOMAIN}" >/etc/resolv.conf
-#echo "nameserver 127.0.0.1" >>/etc/resolv.conf
+echo "search ${DOMAIN}" >/etc/resolv.conf
+echo "nameserver 172.16.31.48" >>/etc/resolv.conf
 
 echo "DNS Slave Setup Complete. Verifying..."
 sleep 2 # Give time for transfer
-dig @127.0.0.1 www1.${DOMAIN} +short || echo "DNS Lookup Failed"
+dig @172.16.31.48 www1.${DOMAIN} || echo "DNS Lookup Failed"
 
 # ==============================================================================
 # 2. NFS Client Setup (Minor 2)
@@ -135,31 +132,6 @@ if [ -f /mnt/nfs/readme.nfs ]; then
 else
     echo "Error: NFS Write Failed."
 fi
-
-# ==============================================================================
-# 3. SSH Client Setup (Minor 1)
-# ==============================================================================
-echo "----------------------------------------------------------------"
-echo "Setting up SSH Client User (Minor 1)..."
-
-# Create user cst8246
-if ! id "${CLIENT_USER}" &>/dev/null; then
-    useradd ${CLIENT_USER}
-    echo "password" | passwd --stdin ${CLIENT_USER}
-    echo "User ${CLIENT_USER} created."
-fi
-
-# Setup SSH directory
-USER_HOME="/home/${CLIENT_USER}"
-mkdir -p ${USER_HOME}/.ssh
-chmod 700 ${USER_HOME}/.ssh
-chown ${CLIENT_USER}:${CLIENT_USER} ${USER_HOME}/.ssh
-
-echo "IMPORTANT: You must manually copy the private key from the server."
-echo "1. On Server: cat /root/client_keys/id_rsa"
-echo "2. On Client: vim ${USER_HOME}/.ssh/id_rsa (Paste content)"
-echo "3. On Client: chmod 600 ${USER_HOME}/.ssh/id_rsa"
-echo "4. On Client: chown ${CLIENT_USER}:${CLIENT_USER} ${USER_HOME}/.ssh/id_rsa"
 
 # ==============================================================================
 # 4. Web Verification (Major 2)

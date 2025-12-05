@@ -7,8 +7,8 @@ set -euo pipefail
 
 # Check for root
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
-   exit 1
+    echo "This script must be run as root"
+    exit 1
 fi
 
 # Configuration
@@ -32,7 +32,7 @@ chmod 777 ${SHARE_DIR}
 echo "Configuring /etc/exports..."
 # "Provides read/write access to any client on the network."
 # We use * but firewall restricts access.
-echo "${SHARE_DIR} *(rw,sync,no_root_squash)" > /etc/exports
+echo "${SHARE_DIR} *(rw,sync,no_root_squash)" >/etc/exports
 
 # Export shares
 exportfs -r
@@ -58,8 +58,8 @@ iptables -A INPUT -p udp -s ${CLIENT_NET} --dport 111 -j ACCEPT
 # Fix mountd port to 20048 (common convention)
 if [ -f /etc/nfs.conf ]; then
     if ! grep -q "port=20048" /etc/nfs.conf; then
-        echo "[mountd]" >> /etc/nfs.conf
-        echo "port=20048" >> /etc/nfs.conf
+        echo "[mountd]" >>/etc/nfs.conf
+        echo "port=20048" >>/etc/nfs.conf
     fi
 fi
 
@@ -67,7 +67,7 @@ iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 20048 -j ACCEPT
 iptables -A INPUT -p udp -s ${CLIENT_NET} --dport 20048 -j ACCEPT
 
 # Save rules
-iptables-save > /etc/sysconfig/iptables
+iptables-save >/etc/sysconfig/iptables
 
 # Start Services
 echo "Starting NFS services..."
