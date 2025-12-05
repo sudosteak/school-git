@@ -102,8 +102,8 @@ systemctl restart named
 
 # Update resolv.conf to use localhost (so we use our slave zones)
 echo "Updating /etc/resolv.conf..."
-echo "search ${DOMAIN}" >/etc/resolv.conf
-echo "nameserver 127.0.0.1" >>/etc/resolv.conf
+#echo "search ${DOMAIN}" >/etc/resolv.conf
+#echo "nameserver 127.0.0.1" >>/etc/resolv.conf
 
 echo "DNS Slave Setup Complete. Verifying..."
 sleep 2 # Give time for transfer
