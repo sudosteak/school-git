@@ -16,7 +16,6 @@ MN=${1:-48}
 SERVER_IP="172.16.30.${MN}"
 ALIAS_IP="172.16.32.${MN}"
 DOMAIN="blue.lab"
-CLIENT_USER="cst8246"
 
 echo "Starting Client Setup for Server MN=${MN}..."
 echo "Server IP: ${SERVER_IP}"
@@ -120,11 +119,11 @@ echo "Mounting NFS Share..."
 mount -t nfs ${SERVER_IP}:/srv/nfs/share /mnt/nfs
 
 # Verify Write Access
-echo "Writing validation file..."
+echo "Writing validation file... (/mnt/nfs/readme.nfs)"
 echo "Client User & MN=${MN}" >/mnt/nfs/readme.nfs
 
 if [ -f /mnt/nfs/readme.nfs ]; then
-    echo "NFS Write Successful."
+    echo "running cat /mnt/nfs/readme.nfs"
     cat /mnt/nfs/readme.nfs
 else
     echo "Error: NFS Write Failed."
