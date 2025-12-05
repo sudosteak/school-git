@@ -107,4 +107,7 @@ echo "Starting httpd..."
 systemctl enable --now httpd
 systemctl restart httpd
 
+echo "Current iptables rules:"
+iptables -L -n -v
+
 echo "Advanced Web Hosting Configuration Complete."

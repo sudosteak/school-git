@@ -79,6 +79,9 @@ iptables-save >/etc/sysconfig/iptables
 # Restart SSH
 systemctl restart sshd
 
+echo "Current iptables rules:"
+iptables -L -n -v
+
 echo "SSH Configuration Complete."
 echo "========================================================"
 echo "IMPORTANT: Copy the private key to the client machine!"

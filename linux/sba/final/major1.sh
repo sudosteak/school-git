@@ -7,8 +7,8 @@ set -euo pipefail
 
 # Check for root
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
-   exit 1
+    echo "This script must be run as root"
+    exit 1
 fi
 
 # Configuration
@@ -51,7 +51,7 @@ dnf install -y bind bind-utils
 
 # Configure named.conf
 echo "Configuring /etc/named.conf..."
-cat > /etc/named.conf <<EOF
+cat >/etc/named.conf <<EOF
 options {
     listen-on port 53 { 127.0.0.1; ${SERVER_IP}; ${ALIAS_IP}; };
     listen-on-v6 port 53 { ::1; };
@@ -61,10 +61,10 @@ options {
     memstatistics-file "/var/named/data/named_mem_stats.txt";
     secroots-file "/var/named/data/named.secroots";
     recursing-file "/var/named/data/named.recursing";
-    
+
     allow-query { localhost; ${CLIENT_NET}; };
     allow-transfer { localhost; ${CLIENT_IP}; };
-    
+
     recursion yes;
     dnssec-enable yes;
     dnssec-validation yes;
@@ -113,7 +113,7 @@ EOF
 echo "Creating zone files..."
 
 # Forward Zone
-cat > /var/named/${DOMAIN}.db <<EOF
+cat >/var/named/${DOMAIN}.db <<EOF
 \$TTL 1D
 @       IN SOA  dns1.${DOMAIN}. root.${DOMAIN}. (
                                         0       ; serial
@@ -134,7 +134,7 @@ secure  A       ${ALIAS_IP}
 EOF
 
 # Reverse Zone 30
-cat > /var/named/30.16.172.db <<EOF
+cat >/var/named/30.16.172.db <<EOF
 \$TTL 1D
 @       IN SOA  dns1.${DOMAIN}. root.${DOMAIN}. (
                                         0       ; serial
@@ -152,7 +152,7 @@ ${MN}      PTR     mail.${DOMAIN}.
 EOF
 
 # Reverse Zone 32
-cat > /var/named/32.16.172.db <<EOF
+cat >/var/named/32.16.172.db <<EOF
 \$TTL 1D
 @       IN SOA  dns1.${DOMAIN}. root.${DOMAIN}. (
                                         0       ; serial
@@ -187,12 +187,15 @@ iptables -A INPUT -p udp -s ${CLIENT_NET} --dport 53 -j ACCEPT
 iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 53 -j ACCEPT
 
 # Save rules
-iptables-save > /etc/sysconfig/iptables
+iptables-save >/etc/sysconfig/iptables
 
 # Start Service
 echo "Starting named service..."
 systemctl enable --now named
 systemctl restart named
+
+echo "Current iptables rules:"
+iptables -L -n -v
 
 echo "DNS Master Configuration Complete."
 echo "========================================================"

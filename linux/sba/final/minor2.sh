@@ -74,6 +74,9 @@ echo "Starting NFS services..."
 systemctl enable --now nfs-server rpcbind
 systemctl restart nfs-server
 
+echo "Current iptables rules:"
+iptables -L -n -v
+
 echo "NFS Configuration Complete."
 echo "========================================================"
 echo "Client Verification Instructions:"

@@ -104,4 +104,7 @@ iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 22 -j ACCEPT
 # Save rules
 iptables-save >/etc/sysconfig/iptables
 
+echo "Current iptables rules:"
+iptables -L -n -v
+
 echo "Initial Setup Complete."
