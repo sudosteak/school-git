@@ -16,6 +16,7 @@ MN=${1:-48}
 SERVER_IP="172.16.30.${MN}"
 ALIAS_IP="172.16.32.${MN}"
 DOMAIN="blue.lab"
+ADMIN_USER="admin"
 
 echo "Starting Client Setup for Server MN=${MN}..."
 echo "Server IP: ${SERVER_IP}"
@@ -105,11 +106,16 @@ echo "DNS Slave Setup Complete. Verifying..."
 sleep 2 # Give time for transfer
 dig @172.16.31.48 www1.${DOMAIN} || echo "DNS Lookup Failed"
 
+ls -al /var/named/slaves
+
 # ==============================================================================
 # 2. NFS Client Setup (Minor 2)
 # ==============================================================================
 echo "----------------------------------------------------------------"
 echo "Setting up NFS Client (Minor 2)..."
+
+# Install utils
+dnf install -y nfs-utils
 
 # Create Mount Point
 mkdir -p /mnt/nfs
@@ -119,15 +125,24 @@ echo "Mounting NFS Share..."
 mount -t nfs ${SERVER_IP}:/srv/nfs/share /mnt/nfs
 
 # Verify Write Access
-echo "Writing validation file... (/mnt/nfs/readme.nfs)"
+echo "Writing validation file..."
 echo "Client User & MN=${MN}" >/mnt/nfs/readme.nfs
 
 if [ -f /mnt/nfs/readme.nfs ]; then
-    echo "running cat /mnt/nfs/readme.nfs"
+    echo "NFS Write Successful."
     cat /mnt/nfs/readme.nfs
 else
     echo "Error: NFS Write Failed."
 fi
+
+# ==============================================================================
+# 3. SSH Client Setup (Minor 1)
+# ==============================================================================
+echo "----------------------------------------------------------------"
+echo " SSH Client Verification (Minor 1)..."
+
+ssh ${ADMIN_USER}@${SERVER_IP}
+ssh root@${SERVER_IP}
 
 # ==============================================================================
 # 4. Web Verification (Major 2)

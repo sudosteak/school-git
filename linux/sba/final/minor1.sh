@@ -43,13 +43,6 @@ else
     sed -i "s/^AllowUsers.*/AllowUsers ${ADMIN_USER} root/" /etc/ssh/sshd_config
 fi
 
-# Setup Keys (Optional helper: Generate keys for client to use)
-# Since we can't touch the client, we will generate a keypair here and print instructions
-echo "Generating temporary SSH keypair for client usage..."
-mkdir -p /root/client_keys
-rm -f /root/client_keys/id_rsa*
-ssh-keygen -t rsa -b 2048 -f /root/client_keys/id_rsa -N "" -q
-
 # Install public key for root
 mkdir -p /root/.ssh
 cat /root/client_keys/id_rsa.pub >>/root/.ssh/authorized_keys
