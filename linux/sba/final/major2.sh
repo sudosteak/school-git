@@ -13,10 +13,10 @@ fi
 
 # Configuration
 MN=${1:-48}
-NET_RED="172.16.30"
+
 NET_BLUE="172.16.31"
 NET_ALIAS="172.16.32"
-SERVER_IP="${NET_RED}.${MN}"
+
 ALIAS_IP="${NET_ALIAS}.${MN}"
 CLIENT_NET="${NET_BLUE}.0/24"
 

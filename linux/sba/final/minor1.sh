@@ -7,20 +7,22 @@ set -euo pipefail
 
 # Check for root
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
-   exit 1
+    echo "This script must be run as root"
+    exit 1
 fi
 
 # Configuration
 MN=${1:-48}
 CLIENT_NET="172.16.31.0/24"
+ADMIN_USER="admin"
+ADMIN_PASS="sba"
 
 echo "Configuring SSH Access..."
 
-# Create admin user if not exists
-if ! id "admin" &>/dev/null; then
-    useradd admin
-    echo "sba" | passwd --stdin admin
+# Create ${ADMIN_USER} user if not exists
+if ! id "${ADMIN_USER}" &>/dev/null; then
+    useradd "${ADMIN_USER}"
+    echo "${ADMIN_PASS}" | passwd --stdin "${ADMIN_USER}"
 fi
 
 # Configure SSH
@@ -34,11 +36,11 @@ sed -i 's/^PubkeyAuthentication no/PubkeyAuthentication yes/' /etc/ssh/sshd_conf
 
 # Restrict users (AllowUsers)
 # "The client user cst8246 must be able to connect admin and root only"
-# This implies we should only allow admin and root to log in via SSH.
+# This implies we should only allow ${ADMIN_USER} and root to log in via SSH.
 if ! grep -q "^AllowUsers" /etc/ssh/sshd_config; then
-    echo "AllowUsers admin root" >> /etc/ssh/sshd_config
+    echo "AllowUsers ${ADMIN_USER} root" >>/etc/ssh/sshd_config
 else
-    sed -i 's/^AllowUsers.*/AllowUsers admin root/' /etc/ssh/sshd_config
+    sed -i "s/^AllowUsers.*/AllowUsers ${ADMIN_USER} root/" /etc/ssh/sshd_config
 fi
 
 # Setup Keys (Optional helper: Generate keys for client to use)
@@ -50,16 +52,16 @@ ssh-keygen -t rsa -b 2048 -f /root/client_keys/id_rsa -N "" -q
 
 # Install public key for root
 mkdir -p /root/.ssh
-cat /root/client_keys/id_rsa.pub >> /root/.ssh/authorized_keys
+cat /root/client_keys/id_rsa.pub >>/root/.ssh/authorized_keys
 chmod 600 /root/.ssh/authorized_keys
 chmod 700 /root/.ssh
 
-# Install public key for admin
-mkdir -p /home/admin/.ssh
-cat /root/client_keys/id_rsa.pub >> /home/admin/.ssh/authorized_keys
-chown -R admin:admin /home/admin/.ssh
-chmod 600 /home/admin/.ssh/authorized_keys
-chmod 700 /home/admin/.ssh
+# Install public key for ${ADMIN_USER}
+mkdir -p /home/${ADMIN_USER}/.ssh
+cat /root/client_keys/id_rsa.pub >>/home/${ADMIN_USER}/.ssh/authorized_keys
+chown -R ${ADMIN_USER}:${ADMIN_USER} /home/${ADMIN_USER}/.ssh
+chmod 600 /home/${ADMIN_USER}/.ssh/authorized_keys
+chmod 700 /home/${ADMIN_USER}/.ssh
 
 # Firewall Configuration
 echo "Configuring Firewall (iptables) - Appending rules..."
@@ -68,11 +70,11 @@ echo "Configuring Firewall (iptables) - Appending rules..."
 systemctl enable --now iptables
 
 # Allow SSH from Client Network (Check if exists first to avoid duplicates)
-iptables -C INPUT -p tcp -s ${CLIENT_NET} --dport 22 -j ACCEPT 2>/dev/null || \
-iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 22 -j ACCEPT
+iptables -C INPUT -p tcp -s ${CLIENT_NET} --dport 22 -j ACCEPT 2>/dev/null ||
+    iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 22 -j ACCEPT
 
 # Save rules
-iptables-save > /etc/sysconfig/iptables
+iptables-save >/etc/sysconfig/iptables
 
 # Restart SSH
 systemctl restart sshd
@@ -85,5 +87,5 @@ echo "On Client:"
 echo "  mkdir -p ~/.ssh"
 echo "  vim ~/.ssh/id_rsa (Paste content of /root/client_keys/id_rsa)"
 echo "  chmod 600 ~/.ssh/id_rsa"
-echo "  ssh -i ~/.ssh/id_rsa admin@172.16.30.${MN}"
+echo "  ssh -i ~/.ssh/id_rsa ${ADMIN_USER}@172.16.30.${MN}"
 echo "========================================================"
