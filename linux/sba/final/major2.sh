@@ -7,8 +7,8 @@ set -euo pipefail
 
 # Check for root
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
-   exit 1
+    echo "This script must be run as root"
+    exit 1
 fi
 
 # Configuration
@@ -44,9 +44,9 @@ mkdir -p /var/www/html/www2
 mkdir -p /var/www/html/secure
 
 # Create Content
-echo "MN: ${MN} - Domain: www1.blue.lab" > /var/www/html/www1/index.html
-echo "MN: ${MN} - Domain: www2.blue.lab" > /var/www/html/www2/index.html
-echo "MN: ${MN} - Domain: secure.blue.lab" > /var/www/html/secure/index.html
+echo "MN: ${MN} - Domain: www1.blue.lab" >/var/www/html/www1/index.html
+echo "MN: ${MN} - Domain: www2.blue.lab" >/var/www/html/www2/index.html
+echo "MN: ${MN} - Domain: secure.blue.lab" >/var/www/html/secure/index.html
 
 # Generate Self-Signed Certificate for secure.blue.lab
 echo "Generating SSL Certificate..."
@@ -57,7 +57,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 
 # Configure Virtual Hosts
 echo "Configuring Virtual Hosts..."
-cat > /etc/httpd/conf.d/vhosts.conf <<EOF
+cat >/etc/httpd/conf.d/vhosts.conf <<EOF
 <VirtualHost *:80>
     ServerName www1.blue.lab
     DocumentRoot /var/www/html/www1
@@ -100,7 +100,7 @@ iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 80 -j ACCEPT
 iptables -A INPUT -p tcp -s ${CLIENT_NET} --dport 443 -j ACCEPT
 
 # Save rules
-iptables-save > /etc/sysconfig/iptables
+iptables-save >/etc/sysconfig/iptables
 
 # Start Service
 echo "Starting httpd..."
