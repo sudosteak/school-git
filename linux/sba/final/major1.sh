@@ -13,7 +13,7 @@ fi
 
 # Configuration
 MN=${1:-48} # Default MN to 48 if not provided
-DOMAIN="blue.lab"
+DOMAIN="ict.lab"
 NET_RED="172.16.30"
 NET_BLUE="172.16.31"
 NET_ALIAS="172.16.32"

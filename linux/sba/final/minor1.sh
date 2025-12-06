@@ -14,7 +14,7 @@ fi
 # Configuration
 MN=${1:-48}
 CLIENT_NET="172.16.31.0/24"
-ADMIN_USER="admin"
+ADMIN_USER="adam"
 ADMIN_PASS="sba"
 
 echo "Configuring SSH Access..."

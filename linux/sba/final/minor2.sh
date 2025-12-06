@@ -14,7 +14,7 @@ fi
 # Configuration
 MN=${1:-48}
 CLIENT_NET="172.16.31.0/24"
-SHARE_DIR="/srv/nfs/share"
+SHARE_DIR="/srv/nfs/we-share"
 
 echo "Configuring Basic NFS Share..."
 
@@ -82,6 +82,6 @@ echo "========================================================"
 echo "Client Verification Instructions:"
 echo "1. mkdir -p /mnt/nfs"
 echo "2. mount -t nfs 172.16.30.${MN}:${SHARE_DIR} /mnt/nfs"
-echo "3. echo \"Your Name & ${MN}\" > /mnt/nfs/readme.nfs"
-echo "4. cat /mnt/nfs/readme.nfs"
+echo "3. echo \"Your Name & ${MN}\" > /mnt/nfs/test.nfs"
+echo "4. cat /mnt/nfs/test.nfs"
 echo "========================================================"

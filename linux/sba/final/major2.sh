@@ -16,6 +16,7 @@ MN=${1:-48}
 
 NET_BLUE="172.16.31"
 NET_ALIAS="172.16.32"
+DOMAIN="ict.lab"
 
 ALIAS_IP="${NET_ALIAS}.${MN}"
 CLIENT_NET="${NET_BLUE}.0/24"
@@ -44,22 +45,22 @@ mkdir -p /var/www/html/www2
 mkdir -p /var/www/html/secure
 
 # Create Content
-echo "MN: ${MN} - Domain: www1.blue.lab" >/var/www/html/www1/index.html
-echo "MN: ${MN} - Domain: www2.blue.lab" >/var/www/html/www2/index.html
-echo "MN: ${MN} - Domain: secure.blue.lab" >/var/www/html/secure/index.html
+echo "MN: ${MN} - Domain: www1.${DOMAIN}" >/var/www/html/www1/index.html
+echo "MN: ${MN} - Domain: www2.${DOMAIN}" >/var/www/html/www2/index.html
+echo "MN: ${MN} - Domain: secure.${DOMAIN}" >/var/www/html/secure/index.html
 
-# Generate Self-Signed Certificate for secure.blue.lab
+# Generate Self-Signed Certificate for secure.${DOMAIN}
 echo "Generating SSL Certificate..."
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout /etc/pki/tls/private/secure.blue.lab.key \
-    -out /etc/pki/tls/certs/secure.blue.lab.crt \
-    -subj "/C=CA/ST=Ontario/L=Ottawa/O=BlueLab/CN=secure.blue.lab"
+    -keyout /etc/pki/tls/private/secure.${DOMAIN}.key \
+    -out /etc/pki/tls/certs/secure.${DOMAIN}.crt \
+    -subj "/C=CA/ST=Ontario/L=Ottawa/O=BlueLab/CN=secure.${DOMAIN}"
 
 # Configure Virtual Hosts
 echo "Configuring Virtual Hosts..."
 cat >/etc/httpd/conf.d/vhosts.conf <<EOF
 <VirtualHost *:80>
-    ServerName www1.blue.lab
+    ServerName www1.${DOMAIN}
     DocumentRoot /var/www/html/www1
     <Directory /var/www/html/www1>
         AllowOverride None
@@ -68,7 +69,7 @@ cat >/etc/httpd/conf.d/vhosts.conf <<EOF
 </VirtualHost>
 
 <VirtualHost *:80>
-    ServerName www2.blue.lab
+    ServerName www2.${DOMAIN}
     DocumentRoot /var/www/html/www2
     <Directory /var/www/html/www2>
         AllowOverride None
@@ -77,11 +78,11 @@ cat >/etc/httpd/conf.d/vhosts.conf <<EOF
 </VirtualHost>
 
 <VirtualHost ${ALIAS_IP}:443>
-    ServerName secure.blue.lab
+    ServerName secure.${DOMAIN}
     DocumentRoot /var/www/html/secure
     SSLEngine on
-    SSLCertificateFile /etc/pki/tls/certs/secure.blue.lab.crt
-    SSLCertificateKeyFile /etc/pki/tls/private/secure.blue.lab.key
+    SSLCertificateFile /etc/pki/tls/certs/secure.${DOMAIN}.crt
+    SSLCertificateKeyFile /etc/pki/tls/private/secure.${DOMAIN}.key
     <Directory /var/www/html/secure>
         AllowOverride None
         Require all granted
