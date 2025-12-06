@@ -43,6 +43,13 @@ else
     sed -i "s/^AllowUsers.*/AllowUsers ${ADMIN_USER} root/" /etc/ssh/sshd_config
 fi
 
+# Generate client keys if they don't exist
+if [ ! -f /root/client_keys/id_rsa ]; then
+    echo "Generating client keys..."
+    mkdir -p /root/client_keys
+    ssh-keygen -t rsa -b 2048 -f /root/client_keys/id_rsa -N "" -q
+fi
+
 # Install public key for root
 mkdir -p /root/.ssh
 cat /root/client_keys/id_rsa.pub >>/root/.ssh/authorized_keys
